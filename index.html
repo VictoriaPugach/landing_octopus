@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Octopus — первый экран (2 варианта)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#eaf2ff;
+    --ink-soft:#9fb3d6;
+    --accent:#34d6ff;
+    --accent2:#7c6bff;
+    --accent3:#19e3c4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#05070f;color:var(--ink);font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+
+  /* ---- label between variants (helper only) ---- */
+  .variant-tag{
+    position:absolute;top:18px;right:22px;z-index:30;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:#cfe0ff;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.16);
+    padding:7px 14px;border-radius:999px;backdrop-filter:blur(8px);
+  }
+
+  .hero{position:relative;width:100%;min-height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  .hero canvas, .hero svg.bg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* ---------- top bar ---------- */
+  .nav{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;
+    padding:30px clamp(22px,5vw,70px)}
+  .nav__logo{height:38px;width:auto;display:block;filter:drop-shadow(0 4px 18px rgba(52,214,255,.35))}
+  .nav__links{display:flex;gap:34px;align-items:center}
+  .nav__links a{color:var(--ink-soft);text-decoration:none;font-size:14.5px;font-weight:500;transition:color .25s}
+  .nav__links a:hover{color:#fff}
+  .nav__cta{padding:11px 22px;border-radius:999px;font-size:14px;font-weight:600;color:#04121b;
+    background:linear-gradient(120deg,var(--accent3),var(--accent));border:none;cursor:pointer;
+    box-shadow:0 8px 26px rgba(25,227,196,.30);transition:transform .2s, box-shadow .2s}
+  .nav__cta:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(25,227,196,.45)}
+  @media(max-width:860px){.nav__links{display:none}}
+
+  /* ---------- shared hero content ---------- */
+  .wrap{position:relative;z-index:15;flex:1;display:flex;align-items:center;
+    padding:0 clamp(22px,5vw,70px) 70px}
+  .eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;
+    letter-spacing:.06em;color:#bfeaff;text-transform:uppercase;
+    background:rgba(52,214,255,.10);border:1px solid rgba(52,214,255,.28);
+    padding:8px 16px;border-radius:999px;margin-bottom:26px}
+  .eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--accent3);
+    box-shadow:0 0 0 4px rgba(25,227,196,.18);animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  h1{font-weight:800;line-height:1.06;letter-spacing:-.02em;margin-bottom:24px}
+  .sub{color:#c2d2ef;line-height:1.6;font-weight:400}
+  .grad{background:linear-gradient(100deg,var(--accent3),var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .actions{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:38px}
+  .btn-primary{padding:16px 30px;border-radius:14px;font-size:16px;font-weight:700;color:#04121b;border:none;cursor:pointer;
+    background:linear-gradient(120deg,var(--accent3),var(--accent));box-shadow:0 14px 40px rgba(52,214,255,.35);
+    transition:transform .2s, box-shadow .2s}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 18px 48px rgba(52,214,255,.5)}
+  .btn-ghost{padding:16px 28px;border-radius:14px;font-size:16px;font-weight:600;color:#dceaff;cursor:pointer;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.18);transition:background .2s,border-color .2s}
+  .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.4)}
+
+  .stats{display:flex;gap:42px;margin-top:54px;flex-wrap:wrap}
+  .stat .num{font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .stat .lbl{font-size:13.5px;color:var(--ink-soft);margin-top:4px;max-width:160px;line-height:1.4}
+
+  /* ================= VARIANT A ================= */
+  #heroA{background:
+      radial-gradient(120% 90% at 78% 20%, rgba(124,107,255,.30), transparent 55%),
+      radial-gradient(120% 90% at 18% 85%, rgba(25,227,196,.18), transparent 55%),
+      linear-gradient(135deg,#070b1c 0%,#0a1230 48%,#0c1140 100%)}
+  #heroA .content{max-width:680px}
+  #heroA h1{font-size:clamp(34px,5vw,62px)}
+  #heroA .sub{font-size:clamp(16px,1.5vw,20px);max-width:560px}
+  /* tentacle sway */
+  .tentacles g{transform-box:fill-box;transform-origin:right center}
+  .sway1{animation:sway 9s ease-in-out infinite}
+  .sway2{animation:sway 11s ease-in-out infinite reverse}
+  .sway3{animation:sway 13s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(.8deg)}}
+  .flow{stroke-dasharray:26 320;animation:flow 6s linear infinite}
+  .flow.d1{animation-duration:5s;animation-delay:-1s}
+  .flow.d2{animation-duration:7s;animation-delay:-3s}
+  .flow.d3{animation-duration:8.5s;animation-delay:-2s}
+  @keyframes flow{to{stroke-dashoffset:-1040}}
+  @media(prefers-reduced-motion:reduce){.flow,.sway1,.sway2,.sway3{animation:none}}
+
+  /* ================= VARIANT B ================= */
+  #heroB{background:
+      radial-gradient(90% 70% at 50% -10%, rgba(60,90,200,.35), transparent 60%),
+      radial-gradient(70% 60% at 50% 120%, rgba(25,227,196,.12), transparent 60%),
+      linear-gradient(180deg,#060a1d 0%,#070d28 55%,#040713 100%)}
+  #heroB .wrap{justify-content:center;text-align:center}
+  #heroB .content{max-width:880px;display:flex;flex-direction:column;align-items:center}
+  #heroB h1{font-size:clamp(34px,5.4vw,66px)}
+  #heroB .sub{font-size:clamp(16px,1.5vw,20px);max-width:620px}
+  #heroB .eyebrow{margin-inline:auto}
+  #heroB .stats{justify-content:center}
+  #heroB .stat .lbl{margin-inline:auto}
+  /* depth vignette */
+  .depth-vignette{position:absolute;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 45%, transparent 40%, rgba(4,7,18,.7) 100%)}
+
+  /* ================= VARIANT C — thick arcs (screen 1 ref) ================= */
+  #heroC{background:
+      radial-gradient(95% 80% at 72% 45%, rgba(44,58,210,.18), transparent 62%),
+      radial-gradient(80% 70% at 12% 36%, rgba(74,82,255,.16), transparent 60%),
+      #050515}
+  #heroC::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;z-index:25;
+    background:linear-gradient(90deg,#2d35e8 0%,#4a55ff 50%,#2d35e8 100%)}
+  #heroC::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;
+    background:
+      radial-gradient(70% 45% at 20% 70%, rgba(5,5,21,.18), rgba(5,5,21,.62) 78%),
+      linear-gradient(90deg, rgba(5,5,21,.24), transparent 26%, transparent 72%, rgba(5,5,21,.36))}
+  #heroC canvas{z-index:1}
+  #heroC .variant-tag{display:none}
+  #heroC .wrap{align-items:flex-end;padding-bottom:clamp(64px,11vh,118px);padding-top:0}
+  #heroC .content{max-width:min(690px,84vw)}
+  #heroC h1{font-size:clamp(25px,3.15vw,42px);font-weight:700;color:#fff;margin-bottom:0;line-height:1.18}
+
+  /* ================= VARIANT D — dense deep field (screen 2) ================= */
+  #heroD{background:
+      radial-gradient(80% 70% at 50% 40%, rgba(40,60,160,.30), transparent 65%),
+      linear-gradient(160deg,#070a22 0%,#0a1138 50%,#05070f 100%)}
+  #heroD .wrap{justify-content:center;text-align:center}
+  #heroD .content{max-width:860px;display:flex;flex-direction:column;align-items:center}
+  #heroD h1{font-size:clamp(34px,5.4vw,66px)}
+  #heroD .sub{font-size:clamp(16px,1.5vw,20px);max-width:600px}
+  #heroD .eyebrow{margin-inline:auto}
+  #heroD .stats{justify-content:center}
+  #heroD .stat .lbl{margin-inline:auto}
+
+  /* ================= VARIANT E — woven deep mesh (screen 2 style) ================= */
+  #heroE{background:
+      radial-gradient(70% 58% at 50% 55%, rgba(58,82,196,.34), transparent 66%),
+      radial-gradient(120% 90% at 50% 0%, rgba(18,26,78,.55), transparent 60%),
+      linear-gradient(175deg,#070a24 0%,#0a1140 48%,#060818 100%)}
+  #heroE .wrap{justify-content:center;text-align:center}
+  #heroE .content{max-width:880px;display:flex;flex-direction:column;align-items:center}
+  #heroE h1{font-size:clamp(34px,5.4vw,66px)}
+  #heroE .sub{font-size:clamp(16px,1.5vw,20px);max-width:600px}
+  #heroE .eyebrow{margin-inline:auto}
+  #heroE .stats{justify-content:center}
+  #heroE .stat .lbl{margin-inline:auto}
+  .spark{position:absolute;z-index:16;color:#dbe9ff;line-height:1;pointer-events:none;
+    text-shadow:0 0 10px rgba(150,190,255,.9);animation:twinkle 2.8s ease-in-out infinite}
+  .spark.s1{top:17%;right:13%;font-size:26px}
+  .spark.s2{top:31%;right:9%;font-size:14px;animation-delay:.9s}
+  @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.12) rotate(18deg)}}
+
+  .scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:18;
+    display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink-soft);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+  .scroll-hint .mouse{width:24px;height:38px;border:2px solid rgba(255,255,255,.35);border-radius:14px;position:relative}
+  .scroll-hint .mouse::after{content:"";position:absolute;top:7px;left:50%;width:4px;height:7px;border-radius:3px;
+    background:var(--accent);transform:translateX(-50%);animation:wheel 1.8s ease-in-out infinite}
+  @keyframes wheel{0%,100%{opacity:0;transform:translate(-50%,0)}40%{opacity:1}80%{opacity:0;transform:translate(-50%,10px)}}
+</style>
+</head>
+<body>
+
+<!-- ===================== VARIANT A ===================== -->
+<section class="hero" id="heroA">
+  <span class="variant-tag">Вариант A · Щупальца</span>
+
+  <!-- animated tentacle background -->
+  <svg class="bg tentacles" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="tg1" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#7c6bff"/><stop offset="1" stop-color="#34d6ff"/>
+      </linearGradient>
+      <linearGradient id="tg2" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#19e3c4"/><stop offset="1" stop-color="#3a7bff"/>
+      </linearGradient>
+      <filter id="glowA"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+
+    <g class="sway1" opacity=".9" filter="url(#glowA)">
+      <path d="M1480,120 C1180,170 1000,90 760,210 C560,310 470,210 300,330 C170,420 80,360 -40,470"
+            fill="none" stroke="url(#tg1)" stroke-width="10" stroke-linecap="round" opacity=".22"/>
+      <path class="flow d1" d="M1480,120 C1180,170 1000,90 760,210 C560,310 470,210 300,330 C170,420 80,360 -40,470"
+            fill="none" stroke="#9fe9ff" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <g class="sway2" opacity=".85" filter="url(#glowA)">
+      <path d="M1500,330 C1260,360 1080,300 880,420 C700,520 600,440 420,540 C260,630 150,580 -30,690"
+            fill="none" stroke="url(#tg2)" stroke-width="9" stroke-linecap="round" opacity=".20"/>
+      <path class="flow d2" d="M1500,330 C1260,360 1080,300 880,420 C700,520 600,440 420,540 C260,630 150,580 -30,690"
+            fill="none" stroke="#bafff0" stroke-width="3.5" stroke-linecap="round"/>
+    </g>
+    <g class="sway3" opacity=".8" filter="url(#glowA)">
+      <path d="M1490,560 C1240,600 1120,560 940,660 C760,760 660,700 480,770 C300,840 190,820 -20,880"
+            fill="none" stroke="url(#tg1)" stroke-width="8" stroke-linecap="round" opacity=".18"/>
+      <path class="flow d3" d="M1490,560 C1240,600 1120,560 940,660 C760,760 660,700 480,770 C300,840 190,820 -20,880"
+            fill="none" stroke="#c9b8ff" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g class="sway1" opacity=".7" filter="url(#glowA)">
+      <path d="M1470,-20 C1300,60 1220,30 1060,120 C900,210 840,150 700,250"
+            fill="none" stroke="url(#tg2)" stroke-width="7" stroke-linecap="round" opacity=".16"/>
+      <path class="flow d2" d="M1470,-20 C1300,60 1220,30 1060,120 C900,210 840,150 700,250"
+            fill="none" stroke="#9fe9ff" stroke-width="2.6" stroke-linecap="round"/>
+    </g>
+  </svg>
+
+  <nav class="nav">
+    <img class="nav__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
+    <div class="nav__links">
+      <a href="#">Возможности</a>
+      <a href="#">Данные</a>
+      <a href="#">Кейсы</a>
+      <a href="#">Тарифы</a>
+      <button class="nav__cta">Получить доступ</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="content">
+      <span class="eyebrow"><span class="dot"></span>AI-платформа мониторинга рекламы</span>
+      <h1>Уникальные данные о рекламной <span class="grad">активности&nbsp;рынка</span> — уже через час после запуска кампаний</h1>
+      <p class="sub">Octopus — AI-платформа с собственными технологиями мониторинга рекламы для&nbsp;формирования полной картины активности рынка и&nbsp;конкурентов.</p>
+      <div class="actions">
+        <button class="btn-primary">Получить доступ</button>
+        <button class="btn-ghost">Смотреть демо</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num grad">1 час</div><div class="lbl">от запуска кампании до готовой аналитики</div></div>
+        <div class="stat"><div class="num grad">360°</div><div class="lbl">картина рынка и конкурентов</div></div>
+        <div class="stat"><div class="num grad">24/7</div><div class="lbl">непрерывный мониторинг рекламы</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint"><div class="mouse"></div>Листайте к&nbsp;варианту B</div>
+</section>
+
+<!-- ===================== VARIANT B ===================== -->
+<section class="hero" id="heroB">
+  <span class="variant-tag">Вариант B · Глубина</span>
+
+  <canvas id="deepCanvas"></canvas>
+  <div class="depth-vignette"></div>
+
+  <nav class="nav">
+    <img class="nav__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
+    <div class="nav__links">
+      <a href="#">Возможности</a>
+      <a href="#">Данные</a>
+      <a href="#">Кейсы</a>
+      <a href="#">Тарифы</a>
+      <button class="nav__cta">Получить доступ</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="content">
+      <span class="eyebrow"><span class="dot"></span>Глубина исследования рынка</span>
+      <h1>Уникальные данные о&nbsp;рекламной <span class="grad">активности рынка</span><br/>уже через час после запуска кампаний</h1>
+      <p class="sub">Octopus — AI-платформа с собственными технологиями мониторинга рекламы для&nbsp;формирования полной картины активности рынка и&nbsp;конкурентов.</p>
+      <div class="actions">
+        <button class="btn-primary">Получить доступ</button>
+        <button class="btn-ghost">Смотреть демо</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num grad">1 час</div><div class="lbl">до готовой аналитики</div></div>
+        <div class="stat"><div class="num grad">360°</div><div class="lbl">обзор конкурентов</div></div>
+        <div class="stat"><div class="num grad">24/7</div><div class="lbl">мониторинг рынка</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VARIANT C ===================== -->
+<section class="hero" id="heroC">
+  <span class="variant-tag">Вариант C · Толстые дуги</span>
+
+  <canvas id="tentacleCanvas"></canvas>
+
+  <div class="wrap">
+    <div class="content">
+      <h1>Уникальные данные о&nbsp;рекламной активности рынка&nbsp;— уже через час после запуска кампаний</h1>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VARIANT D ===================== -->
+<section class="hero" id="heroD">
+  <span class="variant-tag">Вариант D · Глубокий поток</span>
+
+  <canvas id="fieldCanvas"></canvas>
+  <div class="depth-vignette"></div>
+
+  <nav class="nav">
+    <img class="nav__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
+    <div class="nav__links">
+      <a href="#">Возможности</a>
+      <a href="#">Данные</a>
+      <a href="#">Кейсы</a>
+      <a href="#">Тарифы</a>
+      <button class="nav__cta">Получить доступ</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="content">
+      <span class="eyebrow"><span class="dot"></span>Глубина исследования рынка</span>
+      <h1>Уникальные данные о&nbsp;рекламной <span class="grad">активности рынка</span><br/>уже через час после запуска кампаний</h1>
+      <p class="sub">Octopus — AI-платформа с собственными технологиями мониторинга рекламы для&nbsp;формирования полной картины активности рынка и&nbsp;конкурентов.</p>
+      <div class="actions">
+        <button class="btn-primary">Получить доступ</button>
+        <button class="btn-ghost">Смотреть демо</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num grad">1 час</div><div class="lbl">до готовой аналитики</div></div>
+        <div class="stat"><div class="num grad">360°</div><div class="lbl">обзор конкурентов</div></div>
+        <div class="stat"><div class="num grad">24/7</div><div class="lbl">мониторинг рынка</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VARIANT E ===================== -->
+<section class="hero" id="heroE">
+  <span class="variant-tag">Вариант E · Плетёная глубина</span>
+
+  <canvas id="weaveCanvas"></canvas>
+  <div class="depth-vignette"></div>
+  <span class="spark s1">✦</span>
+  <span class="spark s2">✦</span>
+
+  <nav class="nav">
+    <img class="nav__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
+    <div class="nav__links">
+      <a href="#">Возможности</a>
+      <a href="#">Данные</a>
+      <a href="#">Кейсы</a>
+      <a href="#">Тарифы</a>
+      <button class="nav__cta">Получить доступ</button>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <div class="content">
+      <span class="eyebrow"><span class="dot"></span>Глубина исследования рынка</span>
+      <h1>Уникальные данные о&nbsp;рекламной <span class="grad">активности рынка</span><br/>уже через час после запуска кампаний</h1>
+      <p class="sub">Octopus — AI-платформа с собственными технологиями мониторинга рекламы для&nbsp;формирования полной картины активности рынка и&nbsp;конкурентов.</p>
+      <div class="actions">
+        <button class="btn-primary">Получить доступ</button>
+        <button class="btn-ghost">Смотреть демо</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num grad">1 час</div><div class="lbl">до готовой аналитики</div></div>
+        <div class="stat"><div class="num grad">360°</div><div class="lbl">обзор конкурентов</div></div>
+        <div class="stat"><div class="num grad">24/7</div><div class="lbl">мониторинг рынка</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ---- Variant B: deep-water flowing data streams + particles ---- */
+(function(){
+  const canvas = document.getElementById('deepCanvas');
+  const ctx = canvas.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,dpr,t=0;
+  let streams=[], dots=[];
+
+  function resize(){
+    dpr = Math.min(devicePixelRatio||1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  function build(){
+    streams=[]; dots=[];
+    const n = Math.max(10, Math.round(W/95));
+    for(let i=0;i<n;i++){
+      streams.push({
+        x:(i+0.5)/n*W + (Math.random()-.5)*40,
+        amp:30+Math.random()*70,
+        len:0.5+Math.random()*0.9,
+        speed:0.15+Math.random()*0.4,
+        phase:Math.random()*Math.PI*2,
+        w:1+Math.random()*2.2,
+        hue:185+Math.random()*70   // cyan -> violet
+      });
+    }
+    const dn = Math.round(W/14);
+    for(let i=0;i<dn;i++){
+      dots.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+.4,
+        sp:0.15+Math.random()*0.5,tw:Math.random()*Math.PI*2,hue:180+Math.random()*80});
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+
+    // vertical descending tentacle-like streams
+    for(const s of streams){
+      const top=-60, bottom=H+60;
+      ctx.beginPath();
+      for(let y=top;y<=bottom;y+=14){
+        const prog=(y-top)/(bottom-top);
+        const wob=Math.sin(prog*Math.PI*s.len + t*s.speed + s.phase)*s.amp*(0.4+prog*0.8);
+        const x=s.x+wob;
+        if(y===top) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,`hsla(${s.hue},90%,65%,0)`);
+      g.addColorStop(0.5,`hsla(${s.hue},90%,65%,0.30)`);
+      g.addColorStop(1,`hsla(${s.hue},90%,70%,0)`);
+      ctx.strokeStyle=g; ctx.lineWidth=s.w; ctx.lineCap='round';
+      ctx.stroke();
+
+      // travelling light blob along the stream (shimmer)
+      const ly=((t*40*s.speed + s.phase*60)% (H+120))-60;
+      const lprog=(ly-top)/(bottom-top);
+      const lwob=Math.sin(lprog*Math.PI*s.len + t*s.speed + s.phase)*s.amp*(0.4+lprog*0.8);
+      const lx=s.x+lwob;
+      const rg=ctx.createRadialGradient(lx,ly,0,lx,ly,26);
+      rg.addColorStop(0,`hsla(${s.hue},95%,75%,0.55)`);
+      rg.addColorStop(1,`hsla(${s.hue},95%,75%,0)`);
+      ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(lx,ly,26,0,Math.PI*2); ctx.fill();
+    }
+
+    // floating plankton particles (depth)
+    for(const d of dots){
+      d.y-=d.sp; d.tw+=0.03;
+      if(d.y<-5){d.y=H+5;d.x=Math.random()*W;}
+      const a=0.3+Math.sin(d.tw)*0.3;
+      ctx.fillStyle=`hsla(${d.hue},90%,75%,${a})`;
+      ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,Math.PI*2); ctx.fill();
+    }
+
+    ctx.globalCompositeOperation='source-over';
+    t+=0.016;
+    if(!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener('resize',resize);
+  resize();
+  if(reduce){ draw(); } else { requestAnimationFrame(draw); }
+})();
+
+/* ---- Variant C: polished animated sea-anemone arcs ---- */
+(function(){
+  const canvas=document.getElementById('tentacleCanvas');
+  const ctx=canvas.getContext('2d');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,dpr,t=0,stems=[];
+
+  function resize(){
+    dpr=Math.min(devicePixelRatio||1,2);
+    W=canvas.clientWidth; H=canvas.clientHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  function build(){
+    stems=[
+      // Left fan: related, but each curve has its own length and bend.
+      {p:[[-.18,.42],[.08,.42],[.21,.25],[.34,-.06]],from:.02,to:.90,w:44,h:236,l:54,a:.96,phase:.1,drift:1.1},
+      {p:[[-.16,.56],[.10,.54],[.24,.36],[.39,.10]],from:.00,to:.78,w:38,h:232,l:50,a:.90,phase:.9,drift:.9},
+      {p:[[-.12,.70],[.13,.67],[.27,.50],[.44,.25]],from:.04,to:.70,w:34,h:229,l:47,a:.82,phase:1.8,drift:.8},
+      {p:[[.04,.87],[.20,.76],[.30,.61],[.43,.40]],from:.00,to:.57,w:28,h:226,l:43,a:.72,phase:2.7,drift:.6},
+      {p:[[.20,-.08],[.40,.00],[.52,.18],[.54,.43]],from:.00,to:.70,w:24,h:231,l:45,a:.38,phase:3.4,drift:.5},
+
+      // Right crown: technological arcs with uneven endpoints, not mirrored copies.
+      {p:[[.51,.16],[.70,-.02],[.96,.02],[1.18,.22]],from:.02,to:.80,w:42,h:238,l:54,a:.94,phase:.45,drift:1.0},
+      {p:[[.59,.30],[.75,.18],[.93,.19],[1.12,.35]],from:.00,to:.75,w:36,h:234,l:51,a:.88,phase:1.25,drift:.85},
+      {p:[[.70,.44],[.84,.34],[.99,.38],[1.13,.54]],from:.00,to:.66,w:32,h:231,l:49,a:.82,phase:2.05,drift:.75},
+      {p:[[.80,.58],[.91,.49],[1.01,.55],[1.09,.70]],from:.00,to:.60,w:30,h:228,l:47,a:.76,phase:2.85,drift:.65},
+      {p:[[.64,-.03],[.84,.02],[.99,.12],[1.10,.30]],from:.00,to:.54,w:26,h:232,l:48,a:.58,phase:3.55,drift:.55},
+      {p:[[.88,.04],[1.00,.10],[1.10,.23],[1.20,.42]],from:.00,to:.58,w:28,h:236,l:52,a:.80,phase:4.25,drift:.65},
+
+      // Deep lower ribbons: slower and darker, so they support the title instead of cluttering it.
+      {p:[[.14,.93],[.39,.68],[.66,.69],[1.02,.78]],from:.04,to:.88,w:40,h:233,l:43,a:.62,phase:.65,drift:.55},
+      {p:[[.22,.98],[.44,.78],[.68,.78],[.96,.88]],from:.00,to:.70,w:32,h:230,l:41,a:.52,phase:1.45,drift:.45},
+      {p:[[.36,.90],[.56,.75],[.77,.79],[1.08,.92]],from:.00,to:.63,w:30,h:236,l:48,a:.70,phase:2.25,drift:.5},
+      {p:[[.50,.99],[.66,.86],[.82,.88],[1.08,.98]],from:.00,to:.50,w:24,h:228,l:41,a:.42,phase:3.05,drift:.35},
+      {p:[[.38,.73],[.55,.63],[.72,.64],[.94,.70]],from:.08,to:.58,w:24,h:226,l:37,a:.28,phase:3.85,drift:.3}
+    ];
+  }
+  function cubic(points,s){
+    const u=1-s, a=u*u*u, b=3*u*u*s, c=3*u*s*s, d=s*s*s;
+    return {
+      x:(a*points[0][0]+b*points[1][0]+c*points[2][0]+d*points[3][0])*W,
+      y:(a*points[0][1]+b*points[1][1]+c*points[2][1]+d*points[3][1])*H
+    };
+  }
+  function drawStem(stem){
+    const pts=stem.p.map(([x,y],i)=>{
+      const wob=reduce?0:Math.sin(t*.34*stem.drift+stem.phase+i*.9)*.006;
+      return [x+wob*(i%2?1:-1), y+wob];
+    });
+    const start=cubic(pts,stem.from), end=cubic(pts,stem.to);
+    const g=ctx.createLinearGradient(start.x,start.y,end.x,end.y);
+    g.addColorStop(0,`hsla(${stem.h},92%,${stem.l-8}%,0)`);
+    g.addColorStop(.12,`hsla(${stem.h},92%,${stem.l+4}%,${stem.a*.78})`);
+    g.addColorStop(.46,`hsla(${stem.h+5},98%,${stem.l+15}%,${stem.a})`);
+    g.addColorStop(.84,`hsla(${stem.h+12},84%,${stem.l-4}%,${stem.a*.62})`);
+    g.addColorStop(1,`hsla(${stem.h+14},80%,${stem.l-10}%,0)`);
+
+    ctx.beginPath();
+    for(let s=stem.from;s<=stem.to+.001;s+=.018){
+      const p=cubic(pts,Math.min(s,stem.to));
+      s===stem.from?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
+    }
+    ctx.strokeStyle=g;
+    ctx.lineWidth=stem.w;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.shadowColor=`hsla(${stem.h},96%,56%,0.30)`;
+    ctx.shadowBlur=12;
+    ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // Slow moving technological highlight, also faded at the ends.
+    if(!reduce){
+      const pulse=(Math.sin(t*.42+stem.phase)*.5+.5);
+      const hs=Math.max(stem.from, stem.from+(stem.to-stem.from)*(pulse-.16));
+      const he=Math.min(stem.to, stem.from+(stem.to-stem.from)*(pulse+.14));
+      if(he>hs){
+        const hStart=cubic(pts,hs), hEnd=cubic(pts,he);
+        const hg=ctx.createLinearGradient(hStart.x,hStart.y,hEnd.x,hEnd.y);
+        hg.addColorStop(0,'rgba(180,205,255,0)');
+        hg.addColorStop(.5,`rgba(210,225,255,${Math.min(.32, stem.a*.34)})`);
+        hg.addColorStop(1,'rgba(180,205,255,0)');
+        ctx.beginPath();
+        for(let s=hs;s<=he+.001;s+=.014){
+          const p=cubic(pts,Math.min(s,he));
+          s===hs?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
+        }
+        ctx.strokeStyle=hg;
+        ctx.lineWidth=Math.max(3,stem.w*.28);
+        ctx.lineCap='round';
+        ctx.stroke();
+      }
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation='source-over';
+    stems.forEach(drawStem);
+    t+=0.016;
+    if(!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener('resize',resize);
+  resize();
+  if(reduce){draw();} else {requestAnimationFrame(draw);}
+})();
+
+/* ---- Variant D: dense flowing deep field (matches screen 2) ---- */
+(function(){
+  const canvas=document.getElementById('fieldCanvas');
+  const ctx=canvas.getContext('2d');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,dpr,t=0,lines=[],stars=[];
+
+  function resize(){
+    dpr=Math.min(devicePixelRatio||1,2);
+    W=canvas.clientWidth; H=canvas.clientHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  function build(){
+    lines=[]; stars=[];
+    const n=Math.max(40,Math.round(W/7));          // DENSE vertical field
+    for(let i=0;i<n;i++){
+      const bright=Math.random()<0.16;
+      lines.push({
+        x:(i+0.5)/n*W+(Math.random()-.5)*8,
+        amp:6+Math.random()*34,
+        freq:0.004+Math.random()*0.012,
+        speed:0.2+Math.random()*0.6,
+        phase:Math.random()*6.28,
+        w:bright?(1.2+Math.random()*1.6):(0.5+Math.random()*1.0),
+        hue:206+Math.random()*46,
+        alpha:bright?(0.32+Math.random()*0.3):(0.06+Math.random()*0.16)
+      });
+    }
+    for(let i=0;i<5;i++) stars.push({x:Math.random()*W,y:Math.random()*H*0.6,r:1+Math.random()*1.6,tw:Math.random()*6.28});
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    for(const l of lines){
+      ctx.beginPath();
+      for(let y=-30;y<=H+30;y+=10){
+        const x=l.x+Math.sin(y*l.freq+t*l.speed+l.phase)*l.amp;
+        y===-30?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,`hsla(${l.hue},85%,68%,0)`);
+      g.addColorStop(0.5,`hsla(${l.hue},85%,68%,${l.alpha})`);
+      g.addColorStop(1,`hsla(${l.hue},85%,70%,0)`);
+      ctx.strokeStyle=g; ctx.lineWidth=l.w; ctx.stroke();
+    }
+    // twinkling sparkles (like the accent on screen 2)
+    for(const s of stars){
+      s.tw+=0.04; const a=0.4+Math.sin(s.tw)*0.4;
+      const rg=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*5);
+      rg.addColorStop(0,`rgba(200,230,255,${a})`); rg.addColorStop(1,'rgba(200,230,255,0)');
+      ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,6.28); ctx.fill();
+    }
+    ctx.globalCompositeOperation='source-over';
+    t+=0.016;
+    if(!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener('resize',resize);
+  resize();
+  if(reduce){draw();} else {requestAnimationFrame(draw);}
+})();
+
+/* ---- Variant E: curtain of THICK flowing strands (tentacle-like, screen 2 style) ---- */
+(function(){
+  const canvas=document.getElementById('weaveCanvas');
+  const ctx=canvas.getContext('2d');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,dpr,t=0,strands=[],spacing=0;
+
+  function resize(){
+    dpr=Math.min(devicePixelRatio||1,2);
+    W=canvas.clientWidth; H=canvas.clientHeight;
+    canvas.width=W*dpr; canvas.height=H*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  function build(){
+    strands=[];
+    const n=Math.max(14,Math.round(W/46));     // few -> THICK strands
+    spacing=W/n;
+    for(let i=0;i<n;i++){
+      strands.push({
+        baseX:(i+0.5)*spacing,
+        half:spacing*(0.62+Math.random()*0.18), // thickness (overlaps neighbours a bit)
+        amp:18+Math.random()*30,                // how far it sways sideways
+        freq:0.0022+Math.random()*0.004,
+        speed:0.10+Math.random()*0.18,
+        phase:i*0.5+Math.random()*0.6,          // neighbours offset -> coherent drape
+        hue:218+Math.random()*30,
+        light:30+Math.random()*16,              // some strands sit deeper (darker)
+        depth:0.6+Math.random()*0.4
+      });
+    }
+    strands.sort((a,b)=>a.depth-b.depth);       // darker/back first, brighter in front
+  }
+  function cx(s,y){
+    return s.baseX + Math.sin(y*s.freq + t*s.speed + s.phase)*s.amp
+                   + Math.sin(y*s.freq*0.5 - t*s.speed*0.7 + s.phase)*s.amp*0.4;
+  }
+  function ribbon(s,off){               // trace centre±off down then up = closed band
+    ctx.beginPath();
+    for(let y=-30;y<=H+30;y+=14){const x=cx(s,y)+off; y===-30?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+    for(let y=H+30;y>=-30;y-=14){const x=cx(s,y)-off; ctx.lineTo(x,y);}
+    ctx.closePath();
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(const s of strands){
+      // shadow/edge (dark) — creates the groove between strands
+      ribbon(s,s.half);
+      ctx.fillStyle=`hsl(${s.hue},70%,${s.light*0.5}%)`; ctx.fill();
+      // mid body
+      ribbon(s,s.half*0.66);
+      ctx.fillStyle=`hsl(${s.hue},78%,${s.light+10}%)`; ctx.fill();
+      // glossy highlight, offset slightly so it reads as a rounded tube catching light
+      ctx.save();
+      ribbon(s,s.half*0.28);
+      ctx.clip();
+      ctx.translate(-s.half*0.18,0);
+      ribbon(s,s.half*0.34);
+      const hl=Math.min(96,s.light+44);
+      ctx.fillStyle=`hsla(${s.hue-6},90%,${hl}%,0.9)`; ctx.fill();
+      ctx.restore();
+    }
+    t+=0.016;
+    if(!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener('resize',resize);
+  resize();
+  if(reduce){draw();} else {requestAnimationFrame(draw);}
+})();
+</script>
+</body>
+</html>
