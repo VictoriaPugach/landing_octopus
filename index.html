@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Octopus — первый экран (2 варианта)</title>
+<title>Octopus — первый экран</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -17,8 +17,8 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:#05070f;color:var(--ink);font-family:'Montserrat',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  /* one-screen-at-a-time paging */
-  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  /* one-screen-at-a-time paging (proximity so the pinned horizontal block can scroll freely) */
+  html{scroll-snap-type:y proximity;scroll-behavior:smooth}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
   /* ---- label between variants (helper only) ---- */
@@ -217,6 +217,384 @@
   .scroll-hint .mouse::after{content:"";position:absolute;top:7px;left:50%;width:4px;height:7px;border-radius:3px;
     background:var(--accent);transform:translateX(-50%);animation:wheel 1.8s ease-in-out infinite}
   @keyframes wheel{0%,100%{opacity:0;transform:translate(-50%,0)}40%{opacity:1}80%{opacity:0;transform:translate(-50%,10px)}}
+
+  /* ================= INFO BLOCK — word cloud wave ================= */
+  .info-block{
+    position:relative;width:100%;min-height:720px;height:min(820px,92vh);overflow:hidden;
+    background:#fff;color:#12082e;scroll-snap-align:start;scroll-snap-stop:always;
+  }
+  .info-block .variant-tag{color:#5a4d8a;background:rgba(90,77,138,.08);border-color:rgba(90,77,138,.18)}
+  .info-block__inner{
+    position:relative;z-index:20;padding:clamp(36px,5vw,64px) clamp(22px,5vw,70px) clamp(20px,3vh,36px);
+    max-width:min(760px);
+  }
+  .info-block__logo{
+    height:38px;width:auto;display:block;margin-bottom:clamp(28px,4vh,48px);
+    filter:brightness(0);
+  }
+  .info-block__title{
+    font-size:clamp(26px,3.6vw,48px);font-weight:800;line-height:1.08;
+    letter-spacing:-.025em;color:#12082e;margin:0;
+  }
+  .wave-scene{
+    position:absolute;left:0;right:0;top:34%;bottom:0;z-index:8;pointer-events:none;
+  }
+  .wave-sea,.wave-body{
+    position:absolute;inset:0;overflow:hidden;
+  }
+  .wave-pill{
+    position:absolute;display:flex;align-items:center;justify-content:center;
+    border-radius:18px;font-weight:600;color:#fff;white-space:nowrap;
+    box-shadow:0 6px 22px rgba(72,86,190,.12);
+    will-change:transform;
+  }
+  .wave-pill--text{border-radius:999px;padding:9px 18px;font-size:13px}
+  .wave-pill--bar{border-radius:16px}
+  .wave-sea{z-index:12}
+  .wave-body{z-index:10}
+  .wave-mascot{display:none !important}
+
+  /* ================= ANALYZE BLOCK — radial ================= */
+  .analyze-block{
+    position:relative;width:100%;min-height:100vh;min-height:100svh;
+    --analyze-bg:#f0eef6;
+    background:var(--analyze-bg);color:#1a1040;
+    scroll-snap-align:start;scroll-snap-stop:always;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:clamp(40px,7vh,72px) clamp(20px,5vw,48px) clamp(32px,5vh,56px);
+  }
+  .analyze-block .variant-tag{color:#6b6288;background:rgba(107,98,136,.1);border-color:rgba(107,98,136,.16)}
+  .analyze-block__title{
+    font-size:clamp(28px,4vw,52px);font-weight:800;line-height:1.1;
+    letter-spacing:-.025em;text-align:center;margin:0 0 clamp(24px,4vh,48px);
+    max-width:14ch;flex-shrink:0;
+  }
+  .analyze-radial{
+    position:relative;width:min(92vw,560px);aspect-ratio:1;margin:auto 0;flex:1 1 auto;
+    max-height:min(62vh,560px);
+  }
+  .analyze-ring{
+    position:absolute;inset:0;width:100%;height:100%;pointer-events:none;
+  }
+  .analyze-ring__halo{
+    fill:none;stroke:rgba(255,255,255,.5);stroke-width:10;
+    opacity:0;filter:blur(6px);
+    transition:opacity 3s ease-out .35s;
+  }
+  .analyze-block.is-visible .analyze-ring__halo{opacity:1}
+  .analyze-ring__track{
+    fill:none;stroke:rgba(255,255,255,.95);stroke-width:2.5;
+    stroke-linecap:round;
+    transform-origin:50% 50%;transform:rotate(-32deg);
+    stroke-dashoffset:var(--ring-len,1005);
+    transition:stroke-dashoffset 3.4s cubic-bezier(.22,1,.36,1) .25s;
+  }
+  .analyze-block.is-visible .analyze-ring__track{stroke-dashoffset:0}
+  .analyze-mascot-shade{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(56%,290px);aspect-ratio:1;border-radius:50%;z-index:0;
+    background:radial-gradient(circle,rgba(58,48,86,.24) 0%,rgba(58,48,86,.12) 40%,rgba(58,48,86,.03) 62%,rgba(58,48,86,0) 72%);
+    opacity:0;transition:opacity 2s ease-out .15s;
+  }
+  .analyze-block.is-visible .analyze-mascot-shade{opacity:1}
+  .analyze-mascot{
+    position:absolute;left:50%;top:50%;
+    width:min(46%,252px);height:auto;z-index:2;
+    display:block;overflow:visible;
+    shape-rendering:geometricPrecision;
+    opacity:0;
+    transform:translate(-50%,calc(-50% + 3%)) scale(.93);
+    transition:opacity 1.6s ease-out .45s, transform 1.6s cubic-bezier(.22,1,.36,1) .45s;
+  }
+  .analyze-mascot .m-tent{transform-box:fill-box;will-change:transform}
+  .analyze-mascot .m-t1{transform-origin:198px 195px;animation:analyzeSwayL 5.4s ease-in-out infinite}
+  .analyze-mascot .m-t2{transform-origin:263px 195px;animation:analyzeSwayR 5.9s ease-in-out infinite -.8s}
+  .analyze-mascot .m-t3{transform-origin:231px 217px;animation:analyzeSwayC 6.2s ease-in-out infinite -1.4s}
+  @keyframes analyzeSwayL{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-3deg)}}
+  @keyframes analyzeSwayR{0%,100%{transform:rotate(0deg)}50%{transform:rotate(3deg)}}
+  @keyframes analyzeSwayC{0%,100%{transform:rotate(0deg)}50%{transform:rotate(2deg)}}
+  .analyze-block.is-visible .analyze-mascot{
+    opacity:.86;
+    transform:translate(-50%,calc(-50% + 3%)) scale(1.06);
+  }
+  .analyze-mascot-glow{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(50%,250px);aspect-ratio:1;border-radius:50%;z-index:1;
+    background:radial-gradient(circle,rgba(255,255,255,1) 0%,rgba(255,255,255,.82) 36%,rgba(255,255,255,.22) 58%,rgba(255,255,255,0) 74%);
+    opacity:0;transition:opacity 2s ease-out .3s;
+  }
+  .analyze-block.is-visible .analyze-mascot-glow{opacity:1}
+  .analyze-items{
+    position:absolute;inset:0;list-style:none;margin:0;padding:0;
+  }
+  .analyze-item{
+    position:absolute;left:50%;top:50%;
+    --r:220px;
+    font-size:clamp(14px,2.1vw,22px);font-weight:700;line-height:1.25;
+    color:#1a1040;white-space:nowrap;text-align:center;
+    opacity:0;
+    transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--a))) scale(.94);
+    transition:opacity 1.3s ease-out, transform 1.3s cubic-bezier(.22,1,.36,1);
+    transition-delay:calc(1.05s + var(--i) * .58s);
+  }
+  .analyze-block.is-visible .analyze-item{
+    opacity:1;
+    transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--a))) scale(1);
+  }
+  @media(max-width:900px){
+    .info-block{min-height:min(92vh,900px)}
+    .info-block__inner{max-width:100%}
+    .analyze-radial{width:min(94vw,480px)}
+    .analyze-item{--r:185px;font-size:clamp(13px,3.2vw,18px);white-space:normal;max-width:120px}
+  }
+  @media(max-width:640px){
+    .info-block__title{font-size:clamp(22px,6vw,30px)}
+    .analyze-block__title{font-size:clamp(24px,6.5vw,32px);max-width:none}
+    .analyze-radial{width:min(96vw,360px)}
+    .analyze-item{--r:140px;max-width:100px;font-size:12px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .analyze-ring__halo,.analyze-ring__track,.analyze-mascot-shade,.analyze-mascot,.analyze-mascot-glow,.analyze-item{transition:none}
+    .analyze-mascot .m-tent{animation:none}
+    .analyze-block.is-visible .analyze-ring__halo,
+    .analyze-block.is-visible .analyze-ring__track{opacity:1;stroke-dashoffset:0}
+    .analyze-block.is-visible .analyze-mascot-shade,
+    .analyze-block.is-visible .analyze-mascot,.analyze-block.is-visible .analyze-mascot-glow,
+    .analyze-block.is-visible .analyze-item{opacity:1;transform:translate(-50%,-50%) rotate(var(--a)) translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--a)))}
+    .analyze-block.is-visible .analyze-mascot{transform:translate(-50%,calc(-50% + 3%)) scale(1.06);opacity:.86}
+  }
+
+  /* ================= RESULTS BLOCK — minimalist "Что вы получаете" ================= */
+  .results{position:relative;width:100%;
+    padding:clamp(48px,8vh,96px) 0 clamp(56px,9vh,120px);
+    background:
+      radial-gradient(78% 52% at 84% 16%, rgba(124,107,255,.18), transparent 62%),
+      radial-gradient(64% 46% at 8% 88%, rgba(124,107,255,.10), transparent 60%),
+      linear-gradient(180deg,#0a0a22 0%,#04060f 62%,#01040c 100%),#01030c}
+  .results .variant-tag{color:#cfe0ff;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16)}
+  .results__head{max-width:1180px;margin:0 auto clamp(6px,2vh,26px);
+    padding-inline:clamp(22px,5vw,64px)}
+  .results__eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;
+    letter-spacing:.06em;color:#bfeaff;text-transform:uppercase;margin-bottom:16px;
+    background:rgba(52,214,255,.10);border:1px solid rgba(52,214,255,.28);
+    padding:8px 16px;border-radius:999px}
+  .results__eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--accent3);
+    box-shadow:0 0 0 4px rgba(25,227,196,.18);animation:pulse 2.2s ease-in-out infinite}
+  .results__title{font-size:clamp(24px,3vw,42px);font-weight:800;line-height:1.08;
+    letter-spacing:-.025em;color:var(--ink);margin:0;max-width:18ch}
+
+  .results__grid{position:relative;max-width:1180px;margin:0 auto;
+    padding-inline:clamp(22px,5vw,64px);
+    display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,32vw,420px);
+    gap:clamp(24px,4vw,72px)}
+
+  /* left column — vertical line + numbered steps (text scrolls) */
+  .results__track{position:relative;--line:clamp(46px,5vw,72px)}
+  .results__line{position:absolute;left:var(--line);top:0;bottom:0;width:1.5px;background:rgba(125,185,255,.15)}
+  .results__line-fill{position:absolute;left:var(--line);top:0;width:1.5px;height:0;
+    background:linear-gradient(180deg,var(--accent),var(--accent2));box-shadow:0 0 12px rgba(124,107,255,.6)}
+  .results__step{position:relative;min-height:clamp(360px,80vh,700px);
+    display:flex;flex-direction:column;justify-content:center;
+    padding-left:calc(var(--line) + clamp(26px,3vw,54px));
+    opacity:.2;transition:opacity .55s ease}
+  .results__step.is-active{opacity:1}
+  .results__num{position:absolute;left:0;top:50%;transform:translateY(-50%);
+    width:calc(var(--line) - 14px);text-align:right;
+    font-size:15px;font-weight:600;color:#5f7196;font-variant-numeric:tabular-nums;transition:color .5s}
+  .results__step.is-active .results__num{color:var(--accent2)}
+  .results__dot{position:absolute;left:var(--line);top:50%;width:11px;height:11px;border-radius:50%;
+    background:var(--accent2);box-shadow:0 0 14px rgba(124,107,255,.85);
+    transform:translate(-50%,-50%) scale(.4);opacity:0;transition:opacity .5s,transform .5s}
+  .results__step.is-active .results__dot{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .results__step h3{font-size:clamp(28px,3.6vw,52px);font-weight:800;line-height:1.08;
+    letter-spacing:-.02em;color:#eef4ff;margin:0 0 clamp(14px,2vh,22px);max-width:14ch}
+  .results__step p{font-size:clamp(15px,1.25vw,18px);line-height:1.6;color:#9fb3d6;margin:0;max-width:40ch}
+
+  /* right column — sticky scene that stays put while the text scrolls past */
+  .results__rail{position:relative}
+  .results__stage{position:sticky;top:0;height:100vh;height:100svh;
+    display:flex;align-items:center;justify-content:center}
+  .results__frame{position:relative;width:clamp(230px,25vw,330px);aspect-ratio:1;
+    background:radial-gradient(circle at 50% 42%, rgba(86,70,200,.26), rgba(20,42,92,.12) 58%, transparent 76%)}
+
+  /* octopus — centred, turns to face its travel direction via --face */
+  .results__octo{position:absolute;left:50%;top:50%;width:clamp(92px,12vw,150px);z-index:3;
+    transform:translate(-50%,-50%)}
+  .results__octo.is-dart{animation:octoDart .5s ease-in-out infinite}
+  .results__octo-face{width:100%;transform:rotate(var(--face,-135deg));
+    transition:transform .8s cubic-bezier(.22,1,.36,1)}
+  .results__octo-img{display:block;width:100%;height:auto;animation:octoBob 4.8s ease-in-out infinite;
+    filter:drop-shadow(0 0 18px rgba(124,107,255,.55)) drop-shadow(0 0 5px rgba(255,255,255,.4))}
+  @keyframes octoBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+  @keyframes octoDart{0%,100%{transform:translate(-50%,-50%) translate(0,0)}50%{transform:translate(-50%,-50%) translate(6px,-5px)}}
+
+  /* environment layers — only the active step's layer is shown */
+  .results__env{position:absolute;inset:0;opacity:0;transition:opacity .55s ease;z-index:1}
+  .results__stage.is-s0 .env--dots,
+  .results__stage.is-s1 .env--bubbles,
+  .results__stage.is-s2 .env--current,
+  .results__stage.is-s3 .env--tiles,
+  .results__stage.is-s4 .env--bars,
+  .results__stage.is-s5 .env--compare,
+  .results__stage.is-s6 .env--dart{opacity:1}
+
+  .env--dots .d{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(120,180,255,.55);
+    box-shadow:0 0 8px rgba(120,180,255,.5);animation:dotPulse 3s ease-in-out infinite}
+  @keyframes dotPulse{0%,100%{opacity:.25}50%{opacity:.9}}
+
+  .env--bubbles i{position:absolute;bottom:10%;border-radius:50%;
+    background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.9),rgba(150,200,255,.15));
+    box-shadow:0 0 8px rgba(150,210,255,.55);animation:envBubble 4.2s ease-in infinite}
+  @keyframes envBubble{0%{opacity:0;transform:translateY(24px) scale(.6)}15%{opacity:.9}85%{opacity:.55}100%{opacity:0;transform:translateY(-150px) scale(1)}}
+
+  .env--current svg{position:absolute;inset:0;width:100%;height:100%}
+  .env--current path{fill:none;stroke:rgba(80,200,255,.5);stroke-width:2;stroke-linecap:round;
+    stroke-dasharray:9 13;animation:flowDash 1.5s linear infinite}
+  @keyframes flowDash{to{stroke-dashoffset:-44}}
+
+  .env--tiles span{position:absolute;width:32px;height:32px;border-radius:9px;
+    border:1px solid rgba(120,180,255,.4);background:rgba(40,70,150,.18);
+    animation:tileFloat 5s ease-in-out infinite}
+  @keyframes tileFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+  .env--bars{display:flex;align-items:flex-end;justify-content:center;gap:11px;padding-bottom:16%}
+  .env--bars i{width:14px;border-radius:5px 5px 0 0;
+    background:linear-gradient(180deg,var(--accent),rgba(52,214,255,.22));
+    transform-origin:bottom;animation:barPulse 2.6s ease-in-out infinite}
+  @keyframes barPulse{0%,100%{transform:scaleY(.82)}50%{transform:scaleY(1)}}
+
+  .env--compare .c{position:absolute;top:50%;width:52px;height:52px;border-radius:50%;
+    border:1px solid rgba(120,180,255,.4);transform:translateY(-50%);animation:dotPulse 3s ease-in-out infinite}
+  .env--compare .c1{left:16%}
+  .env--compare .c2{right:16%;animation-delay:1.2s}
+  .env--compare .vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:1px;height:44%;background:rgba(120,180,255,.3)}
+
+  .env--dart i{position:absolute;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,transparent,rgba(120,200,255,.75));animation:streak 1s ease-in-out infinite}
+  @keyframes streak{0%{opacity:0;transform:translateX(-14px)}40%{opacity:1}100%{opacity:0;transform:translateX(16px)}}
+
+  @media(prefers-reduced-motion:reduce){
+    .results__octo-img,.results__octo,.env--dots .d,.env--bubbles i,.env--current path,
+    .env--tiles span,.env--bars i,.env--compare .c,.env--dart i{animation:none}
+    .results__step{opacity:1}
+  }
+
+  /* mobile: single column, scene hidden, steps shown as a list */
+  @media(max-width:900px){
+    .results__grid{grid-template-columns:1fr}
+    .results__rail{display:none}
+    .results__step{min-height:0;padding:26px 0 26px calc(var(--line) + 22px);opacity:1}
+    .results__step h3{font-size:clamp(24px,6.5vw,34px)}
+  }
+
+  /* ---- theme toggle (fixed while this screen is in view) ---- */
+  .results__theme{position:fixed;top:clamp(16px,3vh,28px);right:clamp(16px,3vw,32px);z-index:60;
+    display:inline-flex;align-items:center;gap:3px;padding:5px;border-radius:999px;
+    background:rgba(10,16,34,.55);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);
+    opacity:0;transform:translateY(-8px);pointer-events:none;
+    transition:opacity .4s ease,transform .4s ease,background .4s ease,border-color .4s ease}
+  .results__theme.is-visible{opacity:1;transform:translateY(0);pointer-events:auto}
+  .results__theme button{appearance:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
+    padding:7px 14px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:600;
+    color:#cdd8f0;background:transparent;transition:background .3s,color .3s}
+  .results__theme button svg{width:15px;height:15px}
+  .results__theme button.is-on{background:linear-gradient(120deg,var(--accent3),var(--accent));color:#04121b}
+
+  /* ================= LIGHT THEME — airy lilac, flatter, more minimal ================= */
+  .results.theme-light{
+    background:
+      radial-gradient(80% 56% at 84% 14%, rgba(124,107,255,.12), transparent 64%),
+      radial-gradient(60% 44% at 6% 92%, rgba(124,107,255,.07), transparent 62%),
+      #f6f5fc}
+  .results.theme-light .variant-tag{color:#6a5bd6;background:rgba(124,107,255,.08);border-color:rgba(124,107,255,.2)}
+  .results.theme-light .results__eyebrow{color:#6a5bd6;background:rgba(124,107,255,.08);border-color:rgba(124,107,255,.22)}
+  .results.theme-light .results__eyebrow .dot{background:#7c6bff;box-shadow:0 0 0 4px rgba(124,107,255,.16)}
+  .results.theme-light .results__title{color:#1d1840}
+  .results.theme-light .results__line{background:rgba(124,107,255,.18)}
+  .results.theme-light .results__line-fill{background:#7c6bff;box-shadow:none}
+  .results.theme-light .results__num{color:#a79fc6}
+  .results.theme-light .results__step.is-active .results__num{color:#6a5bd6}
+  .results.theme-light .results__dot{background:#7c6bff;box-shadow:none}
+  .results.theme-light .results__step h3{color:#1d1840}
+  .results.theme-light .results__step p{color:#6b6788}
+  /* flat scene: no glow, dark ink octopus */
+  .results.theme-light .results__frame{background:none}
+  .results.theme-light .results__octo-img{filter:brightness(0) opacity(.82)}
+  .results.theme-light .env--dots .d{background:rgba(124,107,255,.5);box-shadow:none}
+  .results.theme-light .env--bubbles i{box-shadow:none;
+    background:radial-gradient(circle at 32% 30%,rgba(124,107,255,.42),rgba(124,107,255,.06))}
+  .results.theme-light .env--current path{stroke:rgba(124,107,255,.5)}
+  .results.theme-light .env--tiles span{border-color:rgba(124,107,255,.4);background:rgba(124,107,255,.07)}
+  .results.theme-light .env--bars i{background:linear-gradient(180deg,#7c6bff,rgba(124,107,255,.24))}
+  .results.theme-light .env--compare .c{border-color:rgba(124,107,255,.4)}
+  .results.theme-light .env--compare .vs{background:rgba(124,107,255,.3)}
+  .results.theme-light .env--dart i{background:linear-gradient(90deg,transparent,rgba(124,107,255,.6))}
+  .results.theme-light .results__theme{background:rgba(255,255,255,.74);border-color:rgba(124,107,255,.2)}
+  .results.theme-light .results__theme button{color:#6b6788}
+  .results.theme-light .results__theme button.is-on{background:linear-gradient(120deg,#8b79ff,#6a5bd6);color:#fff}
+
+  /* ================= HANDY BLOCK — "Аналитика под рукой" stories carousel ================= */
+  .handy{position:relative;width:100%;min-height:100vh;min-height:100svh;overflow:hidden;
+    scroll-snap-align:start;background:#e7e4f1;
+    display:flex;flex-direction:column;align-items:center;
+    padding:clamp(26px,4vh,56px) 0 clamp(28px,5vh,64px)}
+  .handy .variant-tag{color:#5a4d8a;background:rgba(90,77,138,.08);border-color:rgba(90,77,138,.18)}
+  .handy__title{position:relative;z-index:2;text-align:center;
+    margin:clamp(8px,2vh,22px) auto clamp(16px,3vh,30px);padding-inline:20px;max-width:90vw;
+    font-size:clamp(26px,3.6vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.1;color:#181434}
+  .handy__title .hl{background:linear-gradient(90deg,#8b79ff,#6a5bd6);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .handy__carousel{position:relative;z-index:2;flex:1 1 auto;width:100%;
+    display:flex;align-items:center;justify-content:center}
+  .handy__stage{position:relative;width:100%;height:100%;min-height:clamp(520px,84vh,900px)}
+  .handy__card{position:absolute;left:50%;top:50%;width:clamp(294px,31vw,432px);aspect-ratio:858/1578;
+    border-radius:22px;overflow:hidden;cursor:pointer;background:#11111a;
+    transform:translate(-50%,-50%);transform-origin:center;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+    transition:transform .6s cubic-bezier(.22,1,.36,1),box-shadow .6s,opacity .5s;will-change:transform}
+  .handy__card video{width:100%;height:100%;object-fit:cover;display:block}
+  .handy__card::after{content:"";position:absolute;inset:0;background:rgba(8,8,20,.58);
+    transition:opacity .6s ease;pointer-events:none}
+  .handy__card.is-active{box-shadow:0 40px 100px rgba(60,36,140,.55),0 10px 30px rgba(0,0,0,.4);cursor:default}
+  .handy__card.is-active::after{opacity:0}
+
+  .handy__nav{position:absolute;top:50%;transform:translateY(-50%);z-index:6;
+    width:48px;height:48px;border-radius:50%;border:1px solid rgba(40,30,80,.12);
+    background:rgba(255,255,255,.7);backdrop-filter:blur(8px);color:#2a2546;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;
+    box-shadow:0 8px 24px rgba(40,30,80,.12);transition:background .25s,color .25s,transform .25s}
+  .handy__nav:hover{background:#7c6bff;color:#fff;border-color:transparent}
+  .handy__nav--prev{left:clamp(10px,4vw,60px)}
+  .handy__nav--next{right:clamp(10px,4vw,60px)}
+  .handy__dots{position:relative;z-index:2;display:flex;gap:10px;justify-content:center;
+    margin-top:clamp(16px,2.4vh,26px)}
+  .handy__dot{width:8px;height:8px;border-radius:50%;border:none;padding:0;cursor:pointer;
+    background:rgba(120,110,170,.5);transition:background .3s,transform .3s}
+  .handy__dot.is-on{background:#7c6bff;transform:scale(1.3)}
+
+  @media(max-width:720px){
+    .handy__card{width:clamp(230px,72vw,330px)}
+    .handy__nav{width:40px;height:40px;font-size:20px}
+    .handy__nav--prev{left:6px}
+    .handy__nav--next{right:6px}
+  }
+  @media(prefers-reduced-motion:reduce){ .handy__card{transition:none} }
+
+  /* ================= PATTERN BLOCK — shimmering octopus grid (outro) ================= */
+  .pattern{position:relative;width:100%;min-height:100vh;min-height:100svh;overflow:hidden;
+    scroll-snap-align:start;background:#c7c2ee}
+  .pattern .variant-tag{color:#5a4d8a;background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.35)}
+  .pattern__grid{position:absolute;inset:0;display:grid;align-content:center;justify-items:center;
+    gap:clamp(8px,1.5vw,22px);padding:clamp(16px,3vw,42px)}
+  .pattern__icon{width:clamp(56px,6.2vw,94px);opacity:.22;will-change:opacity;
+    animation:patShimmer 3s ease-in-out infinite}
+  .pattern__icon img{width:100%;height:auto;display:block;filter:brightness(0) invert(1)}
+  @keyframes patShimmer{0%,100%{opacity:.2}50%{opacity:.62}}
+  .pattern__grid.is-paused .pattern__icon{animation-play-state:paused}
+  @media(prefers-reduced-motion:reduce){
+    .pattern__icon{animation:none;opacity:.4}
+  }
 </style>
 </head>
 <body>
@@ -562,6 +940,240 @@
   </div>
 </section>
 
+<!-- ===================== INFO BLOCK — word cloud wave ===================== -->
+<section class="info-block" id="blockWordCloud">
+  <span class="variant-tag">Инфо-блок · Облако слов</span>
+
+  <div class="info-block__inner">
+    <img class="info-block__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
+    <h2 class="info-block__title">Octopus&nbsp;— AI&nbsp;платформа с&nbsp;собственными технологиями мониторинга рекламы для&nbsp;формирования полной картины активности рынка и&nbsp;конкурентов</h2>
+  </div>
+
+  <div class="wave-scene" aria-hidden="true">
+    <div class="wave-sea" id="waveSea"></div>
+    <div class="wave-body" id="waveBody"></div>
+  </div>
+  <img class="wave-mascot" src="assets/mascot-purple.png" alt="" decoding="async" hidden />
+</section>
+
+<!-- ===================== ANALYZE BLOCK — radial ===================== -->
+<section class="analyze-block" id="blockAnalyze">
+  <span class="variant-tag">Инфо-блок · Что анализирует</span>
+
+  <h2 class="analyze-block__title">Что анализирует Octopus</h2>
+
+  <div class="analyze-radial" id="analyzeRadial">
+    <svg class="analyze-ring" viewBox="0 0 400 400" aria-hidden="true">
+      <circle class="analyze-ring__halo" cx="200" cy="200" r="160"/>
+      <circle class="analyze-ring__track" cx="200" cy="200" r="160"/>
+    </svg>
+    <div class="analyze-mascot-shade" aria-hidden="true"></div>
+    <div class="analyze-mascot-glow" aria-hidden="true"></div>
+    <svg class="analyze-mascot" viewBox="0 0 461 403" fill="none" aria-hidden="true">
+      <g class="m-tent m-t1"><path d="M11.0029 244.719C26.1846 281.216 107.681 340.241 128.156 260.39C142.985 202.555 182.673 187.367 197.854 195.187" stroke="url(#am-paint0)" stroke-width="22" stroke-linecap="round"/></g>
+      <g class="m-tent m-t2"><path d="M449.956 244.719C434.774 281.216 353.277 340.241 332.803 260.39C317.973 202.555 278.286 187.367 263.104 195.187" stroke="url(#am-paint1)" stroke-width="22" stroke-linecap="round"/></g>
+      <g class="m-tent m-t3"><path d="M230.737 217.008C246.21 226.653 267.871 258.895 230.737 310.702C193.603 362.51 222.252 386.485 241.219 391.996" stroke="url(#am-paint2)" stroke-width="22" stroke-linecap="round"/></g>
+      <g class="m-head">
+        <path d="M15.4519 40.5373C39.1791 22.7419 86.93 7.91243 88.1164 90.9575C89.3027 174.003 133.593 174.497 159.298 160.656C173.068 153.241 193.091 140.754 184.508 110.236C171.161 62.7815 191.923 30.1567 233.445 31.6396C274.968 33.1226 291.28 61.2986 283.866 99.8552C273.599 153.241 319.456 164.427 352.081 153.241C393.604 139.005 381.246 83.0485 369.876 56.8497C368.394 30.1567 393.604 -2.46818 441.058 16.8101" stroke="url(#am-paint4)" stroke-width="22" stroke-linecap="round"/>
+        <circle cx="214.167" cy="79.0939" r="10.3806" fill="#6E58E8"/>
+        <circle cx="249.757" cy="79.0939" r="10.3806" fill="#6E58E8"/>
+      </g>
+      <defs>
+        <linearGradient id="am-paint0" x1="104.429" y1="193.281" x2="104.429" y2="300.17" gradientUnits="userSpaceOnUse"><stop stop-color="#C4B4F8"/><stop offset="1" stop-color="#6E58E8"/></linearGradient>
+        <linearGradient id="am-paint1" x1="356.53" y1="193.281" x2="356.53" y2="300.17" gradientUnits="userSpaceOnUse"><stop stop-color="#C4B4F8"/><stop offset="1" stop-color="#6E58E8"/></linearGradient>
+        <linearGradient id="am-paint2" x1="231.962" y1="217.008" x2="231.962" y2="391.996" gradientUnits="userSpaceOnUse"><stop stop-color="#C4B4F8"/><stop offset="1" stop-color="#6E58E8"/></linearGradient>
+        <linearGradient id="am-paint4" x1="228.255" y1="10.996" x2="228.255" y2="167.418" gradientUnits="userSpaceOnUse"><stop stop-color="#C4B4F8"/><stop offset="1" stop-color="#6E58E8"/></linearGradient>
+      </defs>
+    </svg>
+    <ul class="analyze-items">
+      <li class="analyze-item" style="--i:4;--a:-58deg">Наружная реклама</li>
+      <li class="analyze-item" style="--i:0;--a:58deg">Баннерная реклама</li>
+      <li class="analyze-item" style="--i:1;--a:118deg">Онлайн видео</li>
+      <li class="analyze-item" style="--i:2;--a:180deg">Реклама на&nbsp;маркетплейсах</li>
+      <li class="analyze-item" style="--i:3;--a:238deg">Телевидение</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== RESULTS BLOCK — что вы получаете ===================== -->
+<section class="results" id="blockResults">
+  <span class="variant-tag">Инфо-блок · Что вы получаете</span>
+
+  <div class="results__theme" role="group" aria-label="Тема оформления">
+    <button type="button" class="results__theme-dark is-on" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      Тёмная
+    </button>
+    <button type="button" class="results__theme-light" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/></svg>
+      Светлая
+    </button>
+  </div>
+
+  <div class="results__head">
+    <span class="results__eyebrow"><span class="dot"></span>Результат работы Octopus</span>
+    <h2 class="results__title">Что вы получаете <span class="grad">в&nbsp;результате?</span></h2>
+  </div>
+
+  <div class="results__grid">
+    <!-- left: text that scrolls past the line -->
+    <div class="results__track">
+      <div class="results__line"></div>
+      <div class="results__line-fill"></div>
+
+      <article class="results__step">
+        <span class="results__num">01</span><span class="results__dot"></span>
+        <h3>Исчерпывающая аналитика</h3>
+        <p>Полная картина рекламной активности рынка и&nbsp;конкурентов в&nbsp;одном окне — без слепых зон.</p>
+      </article>
+
+      <article class="results__step">
+        <span class="results__num">02</span><span class="results__dot"></span>
+        <h3>Свежие данные</h3>
+        <p>Обновления уже через час после запуска кампаний — вы узнаёте о&nbsp;движениях рынка раньше всех.</p>
+      </article>
+
+      <article class="results__step">
+        <span class="results__num">03</span><span class="results__dot"></span>
+        <h3>Анализ динамики выходов</h3>
+        <p>Видно, как меняется активность брендов день за&nbsp;днём и&nbsp;сезон за&nbsp;сезоном.</p>
+      </article>
+
+      <article class="results__step">
+        <span class="results__num">04</span><span class="results__dot"></span>
+        <h3>Статистика по&nbsp;типам медиа</h3>
+        <p>ТВ, наружная, онлайн-видео, баннеры и&nbsp;маркетплейсы — в&nbsp;едином сопоставимом отчёте.</p>
+      </article>
+
+      <article class="results__step">
+        <span class="results__num">05</span><span class="results__dot"></span>
+        <h3>Распределение брендов по&nbsp;категориям</h3>
+        <p>Кто и&nbsp;сколько инвестирует в&nbsp;каждой нише и&nbsp;сегменте рынка.</p>
+      </article>
+
+      <article class="results__step">
+        <span class="results__num">06</span><span class="results__dot"></span>
+        <h3>Сравнение с&nbsp;конкурентами</h3>
+        <p>Ваша доля голоса против ключевых игроков сегмента — без догадок и&nbsp;домыслов.</p>
+      </article>
+
+      <article class="results__step">
+        <span class="results__num">07</span><span class="results__dot"></span>
+        <h3>Готовые отчёты и&nbsp;выгрузки</h3>
+        <p>Данные под рукой: дашборды, экспорт и&nbsp;уведомления в&nbsp;Telegram.</p>
+      </article>
+    </div>
+
+    <!-- right: octopus stays put on screen; the scene around it changes per step -->
+    <div class="results__rail">
+      <div class="results__stage is-s0" aria-hidden="true">
+        <div class="results__frame">
+          <!-- 01 · analytics — scattered data points -->
+          <div class="results__env env--dots">
+            <span class="d" style="left:20%;top:28%"></span>
+            <span class="d" style="left:52%;top:18%;animation-delay:.4s"></span>
+            <span class="d" style="left:74%;top:30%;animation-delay:.9s"></span>
+            <span class="d" style="left:30%;top:58%;animation-delay:1.3s"></span>
+            <span class="d" style="left:66%;top:62%;animation-delay:.7s"></span>
+            <span class="d" style="left:80%;top:50%;animation-delay:1.6s"></span>
+            <span class="d" style="left:16%;top:46%;animation-delay:2s"></span>
+          </div>
+          <!-- 02 · fresh data — rising bubbles -->
+          <div class="results__env env--bubbles">
+            <i style="left:28%;width:7px;height:7px;animation-delay:0s"></i>
+            <i style="left:46%;width:10px;height:10px;animation-delay:.9s"></i>
+            <i style="left:60%;width:6px;height:6px;animation-delay:1.7s"></i>
+            <i style="left:38%;width:8px;height:8px;animation-delay:2.4s"></i>
+            <i style="left:70%;width:7px;height:7px;animation-delay:3.1s"></i>
+          </div>
+          <!-- 03 · dynamics — flowing current -->
+          <div class="results__env env--current">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <path d="M-4 60 Q 12 40 26 56 T 54 52 T 82 56 T 110 50"/>
+              <path d="M-4 44 Q 14 62 28 46 T 56 50 T 84 44 T 110 50" style="animation-delay:-.7s;opacity:.6"/>
+            </svg>
+          </div>
+          <!-- 04 · media types — floating tiles -->
+          <div class="results__env env--tiles">
+            <span style="left:24%;top:26%"></span>
+            <span style="left:60%;top:22%;animation-delay:.8s"></span>
+            <span style="left:30%;top:60%;animation-delay:1.4s"></span>
+            <span style="left:64%;top:60%;animation-delay:2s"></span>
+          </div>
+          <!-- 05 · categories — distribution bars -->
+          <div class="results__env env--bars">
+            <i style="height:38%"></i>
+            <i style="height:64%;animation-delay:.3s"></i>
+            <i style="height:48%;animation-delay:.6s"></i>
+            <i style="height:80%;animation-delay:.2s"></i>
+            <i style="height:54%;animation-delay:.5s"></i>
+          </div>
+          <!-- 06 · vs competitors -->
+          <div class="results__env env--compare">
+            <div class="c c1"></div>
+            <div class="vs"></div>
+            <div class="c c2"></div>
+          </div>
+          <!-- 07 · reports — speed streaks -->
+          <div class="results__env env--dart">
+            <i style="left:18%;top:34%;width:34px;animation-delay:0s"></i>
+            <i style="left:24%;top:50%;width:46px;animation-delay:.25s"></i>
+            <i style="left:20%;top:66%;width:30px;animation-delay:.5s"></i>
+          </div>
+
+          <!-- the octopus -->
+          <div class="results__octo">
+            <div class="results__octo-face">
+              <img class="results__octo-img" src="assets/octopus-swim.png" alt="" decoding="async" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HANDY BLOCK — аналитика под рукой ===================== -->
+<section class="handy" id="blockHandy">
+  <span class="variant-tag">Инфо-блок · Под рукой</span>
+
+  <h2 class="handy__title">Аналитика <span class="hl">всегда</span> под рукой</h2>
+
+  <div class="handy__carousel" id="handyCarousel">
+    <button type="button" class="handy__nav handy__nav--prev" aria-label="Назад">‹</button>
+
+    <div class="handy__stage">
+      <div class="handy__card">
+        <video src="assets/rec-1.mp4" muted playsinline preload="auto"></video>
+      </div>
+      <div class="handy__card">
+        <video src="assets/rec-2.mp4" muted playsinline preload="auto"></video>
+      </div>
+      <div class="handy__card">
+        <video src="assets/rec-3.mp4" muted playsinline preload="auto"></video>
+      </div>
+      <div class="handy__card">
+        <video src="assets/rec-4.mp4" muted playsinline preload="auto"></video>
+      </div>
+    </div>
+
+    <button type="button" class="handy__nav handy__nav--next" aria-label="Вперёд">›</button>
+  </div>
+
+  <div class="handy__dots">
+    <button type="button" class="handy__dot" aria-label="Слайд 1"></button>
+    <button type="button" class="handy__dot" aria-label="Слайд 2"></button>
+    <button type="button" class="handy__dot" aria-label="Слайд 3"></button>
+    <button type="button" class="handy__dot" aria-label="Слайд 4"></button>
+  </div>
+</section>
+
+<!-- ===================== PATTERN BLOCK — shimmering octopus grid ===================== -->
+<section class="pattern" id="blockPattern">
+  <span class="variant-tag">Инфо-блок · Паттерн</span>
+  <div class="pattern__grid" id="patternGrid" aria-hidden="true"></div>
+</section>
+
 <script>
 /* ---- Variants A, C & E: pause SVG sway/flow when scrolled off-screen ---- */
 (function(){
@@ -771,6 +1383,460 @@
   resize();
   if(reduce){draw(0.016);}
   else new IntersectionObserver(es=>{ inView=es[0].isIntersecting; update(); },{threshold:.6}).observe(canvas.closest('.hero'));
+})();
+
+/* ---- Info block: wave-shaped word cloud ---- */
+(function(){
+  const WORDS = [
+    'Octopus','AI','Мониторинг','Аналитика','Данные','Реклама','Скорость','Конкуренты',
+    'ТВ','OOH','OLV','Маркетплейсы','Баннеры','Парсинг','Автоматизация','Креативы',
+    'Инвестиции','Стратегия','Рынок','Эффективность','Уведомления','Telegram','Час',
+    'Решения','Платформа','Сбор','Обработка','Метрики','Динамика','Исследования',
+    'Доступ','Мобильность','Уникальность','Медиасплит','Кампании','Затраты','Объемы',
+    'Инструмент','Лидерство','Тренды','Оценка','Простота','Контроль','Картина',
+    'Бизнес','Рост','Показы','Данные под рукой'
+  ];
+
+  const GRADS = [
+    ['#8b96ff','#6b78e8'],['#9b88ef','#7560e4'],['#7fa4ff','#5a82eb'],
+    ['#a094ff','#7a6ae8'],['#6f8fff','#526fd8'],['#b098ff','#8468e0'],
+    ['#7890ff','#5c70de'],['#9588ff','#7062e6']
+  ];
+
+  const block = document.getElementById('blockWordCloud');
+  const seaEl = document.getElementById('waveSea');
+  const bodyEl = document.getElementById('waveBody');
+  if(!block || !seaEl || !bodyEl) return;
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const floaters = [];
+  let W = 0, H = 0, sceneH = 0, t = 0, raf = 0, running = false, inView = false;
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function pickGrad(){ return GRADS[Math.floor(Math.random()*GRADS.length)]; }
+
+  function smoothstep(a, b, x){
+    const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+  }
+
+  /* плавная линия волны: слева низко, справа поднимается мягкой дугой */
+  function waveLine(nx){
+    const base = 0.78;
+    const lift = 0.36 * smoothstep(0.28, 1.0, nx);
+    const swell = 0.11 * Math.sin((nx * 2.2 + 0.2) * Math.PI)
+                + 0.05 * Math.sin((nx * 4.8 + 0.6) * Math.PI)
+                + 0.025 * Math.sin((nx * 8.3 + 1.3) * Math.PI);
+    return base - lift + swell;
+  }
+
+  function zoneAt(nx, ny){
+    const seaBand = 0.27;
+    if(ny >= 1 - seaBand) return 'sea';
+    if(ny >= waveLine(nx) - 0.015) return 'wave';
+    return null;
+  }
+
+  function inTextSafe(nx, ny){
+    if(nx > 0.54) return false;
+    return ny < waveLine(nx) - 0.06;
+  }
+
+  function waveDensity(nx, ny){
+    const surface = waveLine(nx);
+    const depth = (ny - surface) / Math.max(0.001, 1 - surface);
+    return Math.max(0.12, Math.min(1, 0.35 + depth * 0.85));
+  }
+
+  function makeBar(parent, x, y, w, h, opacity, z){
+    const el = document.createElement('div');
+    el.className = 'wave-pill wave-pill--bar';
+    const [c1,c2] = pickGrad();
+    el.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;opacity:${opacity};z-index:${z};background:linear-gradient(135deg,${c1},${c2})`;
+    parent.appendChild(el);
+    return el;
+  }
+
+  function makeWord(parent, word, x, y, z){
+    const el = document.createElement('div');
+    el.className = 'wave-pill wave-pill--text';
+    el.textContent = word;
+    const fs = word.length > 14 ? 11 : word.length > 10 ? 12 : 13;
+    const padX = word.length > 12 ? 16 : 20;
+    const [c1,c2] = pickGrad();
+    el.style.cssText = `left:${x}px;top:${y}px;font-size:${fs}px;padding:8px ${padX}px;z-index:${z};background:linear-gradient(135deg,${c1},${c2})`;
+    parent.appendChild(el);
+    floaters.push({
+      el, x, y,
+      ax: rand(5,12), ay: rand(4,10),
+      sx: rand(.2,.38), sy: rand(.16,.3),
+      px: rand(0,6.28), py: rand(0,6.28),
+      rot: rand(-2,2)
+    });
+    return el;
+  }
+
+  function build(){
+    seaEl.replaceChildren();
+    bodyEl.replaceChildren();
+    floaters.length = 0;
+
+    const seaTop = sceneH * 0.73;
+    let wordIdx = 0;
+
+    /* море — три ряда с лёгким покачиванием по кривой волны */
+    const rowH = (sceneH - seaTop) / 3;
+    for(let row = 0; row < 3; row++){
+      let x = -12;
+      const baseY = seaTop + row * rowH + rowH * 0.1;
+      const barH = rowH * rand(0.52, 0.76);
+      while(x < W + 20){
+        const barW = rand(68, 156);
+        const nx = (x + barW * 0.5) / W;
+        const y = baseY + (waveLine(nx) - 0.76) * sceneH * 0.35 + rand(-3, 3);
+        if(Math.random() < 0.36 && wordIdx < WORDS.length){
+          const word = WORDS[wordIdx++];
+          makeWord(seaEl, word, x, y, 12 + row);
+          x += Math.min(barW, word.length * 9 + 34) + rand(10, 16);
+        } else {
+          makeBar(seaEl, x, y, barW, barH, rand(0.62, 0.94), 8 + row);
+          x += barW + rand(8, 12);
+        }
+      }
+    }
+
+    /* тело волны — мелкая сетка, плотность по глубине */
+    const cols = Math.max(14, Math.round(W / 42));
+    const rows = Math.max(10, Math.round(sceneH / 34));
+    const cellW = W / cols;
+    const cellH = sceneH / rows;
+    const slots = [];
+
+    for(let r = 0; r < rows; r++){
+      for(let c = 0; c < cols; c++){
+        const cx = (c + 0.5) * cellW + rand(-8, 8);
+        const cy = (r + 0.5) * cellH + rand(-6, 6);
+        const nx = cx / W;
+        const ny = cy / sceneH;
+        if(zoneAt(nx, ny) !== 'wave') continue;
+        if(inTextSafe(nx, ny)) continue;
+        if(Math.random() > waveDensity(nx, ny)) continue;
+        slots.push({
+          x: cx - cellW * rand(0.28, 0.42),
+          y: cy - cellH * rand(0.18, 0.32),
+          w: cellW * rand(0.68, 0.96),
+          h: cellH * rand(0.42, 0.72)
+        });
+      }
+    }
+
+    slots.sort((a,b) => a.y - b.y || a.x - b.x);
+    slots.forEach((slot, i) => {
+      if(wordIdx < WORDS.length && Math.random() < 0.48){
+        makeWord(bodyEl, WORDS[wordIdx++], slot.x, slot.y, 14 + (i % 5));
+      } else {
+        makeBar(bodyEl, slot.x, slot.y, slot.w, slot.h, rand(0.52, 0.88), 10 + (i % 4));
+      }
+    });
+
+    /* гребень волны — плавная линия поверхности */
+    for(let i = 0; i < 52; i++){
+      const nx = rand(0.34, 0.98);
+      const surface = waveLine(nx);
+      const ny = surface + rand(0.008, 0.055);
+      const x = nx * W;
+      const y = ny * sceneH;
+      if(inTextSafe(nx, ny)) continue;
+      if(wordIdx < WORDS.length && Math.random() < 0.55){
+        makeWord(bodyEl, WORDS[wordIdx++], x, y, 15);
+      } else {
+        makeBar(bodyEl, x, y, rand(44, 110), rand(22, 32), rand(0.58, 0.86), 11);
+      }
+    }
+
+    let extra = 0;
+    while(wordIdx < WORDS.length && extra < 100){
+      extra++;
+      const nx = rand(0.38, 0.96);
+      const ny = rand(waveLine(nx) + 0.02, 0.96);
+      if(zoneAt(nx, ny) === 'wave' && !inTextSafe(nx, ny)){
+        makeWord(bodyEl, WORDS[wordIdx++], nx * W, ny * sceneH, 13);
+      }
+    }
+  }
+
+  function layout(){
+    W = block.clientWidth;
+    H = block.clientHeight;
+    sceneH = block.querySelector('.wave-scene')?.clientHeight || H * 0.66;
+    build();
+  }
+
+  function tick(){
+    if(!running) return;
+    t += 0.016;
+    for(const p of floaters){
+      const dx = Math.sin(t * p.sx + p.px) * p.ax;
+      const dy = Math.cos(t * p.sy + p.py) * p.ay;
+      const rot = p.rot + Math.sin(t * 0.22 + p.px) * 0.8;
+      p.el.style.transform = `translate3d(${dx}px,${dy}px,0) rotate(${rot}deg)`;
+    }
+    raf = requestAnimationFrame(tick);
+  }
+
+  function start(){ if(running || reduce) return; running = true; raf = requestAnimationFrame(tick); }
+  function stop(){ running = false; if(raf) cancelAnimationFrame(raf); }
+
+  let resizeTimer;
+  addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(layout, 120);
+  }, {passive:true});
+
+  new IntersectionObserver(es=>{
+    inView = es[0].isIntersecting;
+    if(inView && !reduce) start(); else stop();
+  }, {threshold:.2}).observe(block);
+
+  layout();
+  if(!reduce) start();
+})();
+
+/* ---- Analyze block: clockwise reveal on scroll ---- */
+(function(){
+  const block = document.getElementById('blockAnalyze');
+  const ring = block?.querySelector('.analyze-ring__track');
+  if(!block) return;
+
+  const len = ring ? 2 * Math.PI * 160 : 0;
+  if(ring){
+    ring.style.setProperty('--ring-len', String(len));
+    ring.style.strokeDasharray = String(len);
+    ring.style.strokeDashoffset = String(len);
+  }
+
+  function reveal(){
+    if(block.classList.contains('is-visible')) return;
+    block.classList.add('is-visible');
+    if(ring) ring.style.strokeDashoffset = '0';
+  }
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){
+    reveal();
+    return;
+  }
+
+  new IntersectionObserver(es=>{
+    if(es[0].isIntersecting) reveal();
+  }, {threshold:.18, rootMargin:'0px 0px -8% 0px'}).observe(block);
+
+  if(location.hash === '#blockAnalyze'){
+    requestAnimationFrame(()=> block.scrollIntoView({block:'start'}));
+  }
+})();
+
+/* ---- Results block: text scrolls, octopus stays put, scene changes per step ---- */
+(function(){
+  const section = document.getElementById('blockResults');
+  if(!section) return;
+  const fill  = section.querySelector('.results__line-fill');
+  const track = section.querySelector('.results__track');
+  const stage = section.querySelector('.results__stage');
+  const octo  = section.querySelector('.results__octo');
+  const face  = section.querySelector('.results__octo-face');
+  const steps = [...section.querySelectorAll('.results__step')];
+  if(!track || !octo || !steps.length) return;
+
+  /* Angle (deg, clockwise from +X: right=0, down=90, left=180, up=270) that the
+     octopus artwork's HEAD points toward. Tweak this one value if the head ends
+     up facing the wrong way. */
+  const RAW_HEAD = 135;          // raw logo swims toward its lower-left
+
+  /* per-step scene: travel = direction the octopus faces; dart = quick-wiggle */
+  const SCENES = [
+    {travel:0,   dart:false},   // 01 analytics — looks right
+    {travel:285, dart:false},   // 02 fresh — rises with the bubbles
+    {travel:15,  dart:false},   // 03 dynamics — drifts with the current
+    {travel:175, dart:false},   // 04 media — turns to the tiles
+    {travel:275, dart:false},   // 05 categories — looks up over the bars
+    {travel:0,   dart:false},   // 06 vs — faces right
+    {travel:320, dart:true}     // 07 reports — darts up-right
+  ];
+
+  const clamp = (v,a,b)=> Math.min(b, Math.max(a, v));
+  let ticking = false, current = -1;
+
+  function update(){
+    const mid = innerHeight * 0.5;
+    const rect = track.getBoundingClientRect();
+
+    /* fill the line down to the viewport centre */
+    if(fill) fill.style.height = (clamp((mid - rect.top) / rect.height, 0, 1) * 100) + '%';
+
+    /* active step = the one whose centre is nearest the viewport centre */
+    let active = 0, best = Infinity;
+    steps.forEach((s,i)=>{
+      const r = s.getBoundingClientRect();
+      const d = Math.abs((r.top + r.height / 2) - mid);
+      if(d < best){ best = d; active = i; }
+    });
+    steps.forEach((s,i)=> s.classList.toggle('is-active', i === active));
+
+    if(active === current) return;
+    current = active;
+
+    if(stage){
+      for(let i = 0; i < SCENES.length; i++) stage.classList.toggle('is-s' + i, i === active);
+    }
+    const scene = SCENES[active] || SCENES[0];
+    octo.classList.toggle('is-dart', scene.dart);
+    if(face) face.style.setProperty('--face', (scene.travel - RAW_HEAD) + 'deg');
+  }
+
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(()=>{ ticking = false; update(); });
+  }
+  addEventListener('scroll', onScroll, {passive:true});
+  addEventListener('resize', onScroll, {passive:true});
+  update();
+
+  /* ---- theme toggle: fixed while this screen is in view ---- */
+  const themeBar = section.querySelector('.results__theme');
+  if(themeBar){
+    const btnDark  = themeBar.querySelector('.results__theme-dark');
+    const btnLight = themeBar.querySelector('.results__theme-light');
+    function setTheme(light){
+      section.classList.toggle('theme-light', light);
+      btnLight.classList.toggle('is-on', light);
+      btnDark.classList.toggle('is-on', !light);
+      btnLight.setAttribute('aria-pressed', String(light));
+      btnDark.setAttribute('aria-pressed', String(!light));
+    }
+    btnDark.addEventListener('click', ()=> setTheme(false));
+    btnLight.addEventListener('click', ()=> setTheme(true));
+    new IntersectionObserver(es=>{
+      themeBar.classList.toggle('is-visible', es[0].isIntersecting);
+    }, {threshold:.04}).observe(section);
+  }
+})();
+
+/* ---- Handy block: stories-style video carousel ---- */
+(function(){
+  const root = document.getElementById('handyCarousel');
+  if(!root) return;
+  const section = root.closest('.handy');
+  const cards = [...root.querySelectorAll('.handy__card')];
+  const dots  = [...section.querySelectorAll('.handy__dot')];
+  const prev  = root.querySelector('.handy__nav--prev');
+  const next  = root.querySelector('.handy__nav--next');
+  if(!cards.length) return;
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let active = Math.min(1, cards.length - 1);   // start with a centred-ish card
+  let inView = false;
+
+  function layout(){
+    const w = cards[0].getBoundingClientRect().width || 240;
+    const spacing = w * 0.62;
+    cards.forEach((card,i)=>{
+      const off = i - active, abs = Math.abs(off);
+      const scale = off === 0 ? 1 : (abs === 1 ? 0.82 : 0.66);
+      card.style.transform = `translate(calc(-50% + ${off * spacing}px),-50%) scale(${scale})`;
+      card.style.zIndex = String(100 - abs);
+      card.style.opacity = abs > 2 ? '0' : '1';
+      card.style.pointerEvents = abs > 2 ? 'none' : 'auto';
+      card.classList.toggle('is-active', off === 0);
+    });
+    dots.forEach((d,i)=> d.classList.toggle('is-on', i === active));
+    syncVideos();
+  }
+
+  function syncVideos(){
+    cards.forEach((card,i)=>{
+      const v = card.querySelector('video');
+      if(!v) return;
+      if(i === active && inView && !reduce){
+        const p = v.play();
+        if(p && p.catch) p.catch(()=>{});
+      } else {
+        v.pause();
+        if(i !== active){ try{ v.currentTime = 0; }catch(e){} }
+      }
+    });
+  }
+
+  function go(n){ active = (n + cards.length) % cards.length; layout(); }
+
+  if(prev) prev.addEventListener('click', ()=> go(active - 1));
+  if(next) next.addEventListener('click', ()=> go(active + 1));
+  cards.forEach((card,i)=> card.addEventListener('click', ()=>{ if(i !== active) go(i); }));
+  dots.forEach((d,i)=> d.addEventListener('click', ()=> go(i)));
+  cards.forEach((card,i)=>{
+    const v = card.querySelector('video');
+    if(v) v.addEventListener('ended', ()=>{ if(i === active) go(active + 1); });
+  });
+
+  new IntersectionObserver(es=>{
+    inView = es[0].isIntersecting;
+    syncVideos();
+  }, {threshold:.4}).observe(section);
+
+  addEventListener('resize', layout, {passive:true});
+  layout();
+})();
+
+/* ---- Pattern block: octopus grid shimmering as a diagonal wave ---- */
+(function(){
+  const grid = document.getElementById('patternGrid');
+  if(!grid) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SRC = 'assets/octopus-swim.png';
+  const DUR = 3;   // matches patShimmer duration (s)
+
+  function build(){
+    const rect = grid.getBoundingClientRect();
+    if(!rect.width || !rect.height) return;
+    const cell = Math.max(84, Math.min(132, rect.width / 9));
+    const cols = Math.max(3, Math.round(rect.width / cell));
+    const rows = Math.max(3, Math.round(rect.height / cell));
+    grid.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+
+    const frag = document.createDocumentFragment();
+    for(let i = 0; i < cols * rows; i++){
+      const span = document.createElement('span');
+      span.className = 'pattern__icon';
+      const img = document.createElement('img');
+      img.src = SRC; img.alt = ''; img.decoding = 'async';
+      img.style.transform = `rotate(${Math.floor(Math.random()*360)}deg) scaleX(${Math.random()<.5?-1:1})`;
+      span.appendChild(img);
+      frag.appendChild(span);
+    }
+    grid.replaceChildren(frag);
+
+    if(reduce) return;
+    /* delay each icon by its diagonal position → a wave rolls across the grid */
+    requestAnimationFrame(()=>{
+      const icons = grid.querySelectorAll('.pattern__icon');
+      icons.forEach(ic=>{
+        const r = ic.getBoundingClientRect();
+        const cx = r.left + r.width/2 - rect.left;
+        const cy = r.top + r.height/2 - rect.top;
+        const d = (cx + cy) / (rect.width + rect.height);   // 0..1
+        ic.style.animationDelay = (-d * DUR) + 's';
+      });
+    });
+  }
+
+  let t;
+  addEventListener('resize', ()=>{ clearTimeout(t); t = setTimeout(build, 200); }, {passive:true});
+  new IntersectionObserver(es=>{
+    grid.classList.toggle('is-paused', !es[0].isIntersecting);
+  }, {threshold:.05}).observe(grid.closest('.pattern'));
+
+  build();
 })();
 
 </script>

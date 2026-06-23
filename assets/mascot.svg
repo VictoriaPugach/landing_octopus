@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 672 387" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="mascotPurple" x1="120" y1="16" x2="552" y2="368" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#5c6fe0"/>
+      <stop offset="50%" stop-color="#7362e8"/>
+      <stop offset="100%" stop-color="#9588ff"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#mascotPurple)">
+    <path d="M336 18C468 18 550 74 550 154C550 228 488 276 336 276C184 276 122 228 122 154C122 74 204 18 336 18Z"/>
+    <rect x="180" y="246" width="56" height="126" rx="28"/>
+    <rect x="436" y="246" width="56" height="126" rx="28"/>
+    <rect x="250" y="258" width="44" height="114" rx="22"/>
+    <path d="M368 258C368 258 384 296 378 328C372 358 364 372 358 376C352 372 344 354 338 322C332 290 348 258 368 258Z"/>
+  </g>
+  <circle cx="276" cy="138" r="21" fill="#fff"/>
+  <circle cx="396" cy="138" r="21" fill="#fff"/>
+</svg>
