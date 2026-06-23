@@ -162,8 +162,9 @@
   .eweave .lb-i{stroke:url(#gI);stroke-width:18}
   .eweave .lb-d{stroke:url(#gD);stroke-width:20}
   .eweave .lb-e{stroke:url(#gE);stroke-width:23}
-  /* soft sheen: one stroke, gaussian-blurred -> smooth fade, no hard stripe */
-  .eweave .hi{stroke:#9cbcff;stroke-width:7;opacity:.34;filter:url(#softHi)}
+  /* soft sheen: plain thin stroke (no SVG blur filter — that forced a per-frame
+     re-raster of the whole animated group and was the main cause of jank) */
+  .eweave .hi{stroke:#9cbcff;stroke-width:5;opacity:.16}
   /* drifting deep-sea motes for life */
   .eweave .mote{fill:url(#mote);animation:moteFloat linear infinite}
   @keyframes moteFloat{
@@ -313,6 +314,8 @@
   @keyframes analyzeSwayL{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-3deg)}}
   @keyframes analyzeSwayR{0%,100%{transform:rotate(0deg)}50%{transform:rotate(3deg)}}
   @keyframes analyzeSwayC{0%,100%{transform:rotate(0deg)}50%{transform:rotate(2deg)}}
+  /* pause tentacle sway while the analyze screen is off-view */
+  .analyze-block.is-idle .m-tent{animation-play-state:paused}
   .analyze-block.is-visible .analyze-mascot{
     opacity:.86;
     transform:translate(-50%,calc(-50% + 3%)) scale(1.06);
@@ -473,6 +476,13 @@
   .env--dart i{position:absolute;height:2px;border-radius:2px;
     background:linear-gradient(90deg,transparent,rgba(120,200,255,.75));animation:streak 1s ease-in-out infinite}
   @keyframes streak{0%{opacity:0;transform:translateX(-14px)}40%{opacity:1}100%{opacity:0;transform:translateX(16px)}}
+
+  /* pause every animation in this block while it is off-view */
+  .results.is-idle .results__octo-img,.results.is-idle .results__octo,
+  .results.is-idle .results__eyebrow .dot,.results.is-idle .env--dots .d,
+  .results.is-idle .env--bubbles i,.results.is-idle .env--current path,
+  .results.is-idle .env--tiles span,.results.is-idle .env--bars i,
+  .results.is-idle .env--compare .c,.results.is-idle .env--dart i{animation-play-state:paused}
 
   @media(prefers-reduced-motion:reduce){
     .results__octo-img,.results__octo,.env--dots .d,.env--bubbles i,.env--current path,
@@ -1182,6 +1192,12 @@
     const hero=document.getElementById(id);
     if(!hero) return;
     new IntersectionObserver(es=>{ hero.classList.toggle('idle', !es[0].isIntersecting); },{threshold:.6}).observe(hero);
+  });
+  /* pause CSS loops on the analyze + results screens whenever they leave the viewport */
+  ['blockAnalyze','blockResults'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    new IntersectionObserver(es=>{ el.classList.toggle('is-idle', !es[0].isIntersecting); },{threshold:0}).observe(el);
   });
 })();
 
