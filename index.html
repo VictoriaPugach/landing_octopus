@@ -6,7 +6,7 @@
 <title>Octopus — первый экран (2 варианта)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
     --ink:#eaf2ff;
@@ -16,7 +16,10 @@
     --accent3:#19e3c4;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:#05070f;color:var(--ink);font-family:'Inter',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  html,body{background:#05070f;color:var(--ink);font-family:'Montserrat',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  /* one-screen-at-a-time paging */
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
   /* ---- label between variants (helper only) ---- */
   .variant-tag{
@@ -27,7 +30,8 @@
     padding:7px 14px;border-radius:999px;backdrop-filter:blur(8px);
   }
 
-  .hero{position:relative;width:100%;min-height:100vh;overflow:hidden;display:flex;flex-direction:column}
+  .hero{position:relative;width:100%;height:100vh;height:100svh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;
+    scroll-snap-align:start;scroll-snap-stop:always}
   .hero canvas, .hero svg.bg{position:absolute;inset:0;width:100%;height:100%}
 
   /* ---------- top bar ---------- */
@@ -80,7 +84,7 @@
   #heroA h1{font-size:clamp(34px,5vw,62px)}
   #heroA .sub{font-size:clamp(16px,1.5vw,20px);max-width:560px}
   /* tentacle sway */
-  .tentacles g{transform-box:fill-box;transform-origin:right center}
+  .tentacles g{transform-box:fill-box;transform-origin:right center;will-change:transform}
   .sway1{animation:sway 9s ease-in-out infinite}
   .sway2{animation:sway 11s ease-in-out infinite reverse}
   .sway3{animation:sway 13s ease-in-out infinite}
@@ -91,6 +95,7 @@
   .flow.d3{animation-duration:8.5s;animation-delay:-2s}
   @keyframes flow{to{stroke-dashoffset:-1040}}
   @media(prefers-reduced-motion:reduce){.flow,.sway1,.sway2,.sway3{animation:none}}
+  #heroA.idle .sway1,#heroA.idle .sway2,#heroA.idle .sway3,#heroA.idle .flow{animation-play-state:paused}
 
   /* ================= VARIANT B ================= */
   #heroB{background:
@@ -119,11 +124,17 @@
     background:
       radial-gradient(70% 45% at 20% 70%, rgba(5,5,21,.18), rgba(5,5,21,.62) 78%),
       linear-gradient(90deg, rgba(5,5,21,.24), transparent 26%, transparent 72%, rgba(5,5,21,.36))}
-  #heroC canvas{z-index:1}
+  #heroC .cpattern{z-index:1}
+  .cpattern path{fill:none}
+  .cSway{transform-box:fill-box;transform-origin:center;will-change:transform;
+    animation:cSway 16s ease-in-out infinite}
+  @keyframes cSway{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(-6px,5px) rotate(-.5deg)}}
+  #heroC.idle .cSway{animation-play-state:paused}
+  @media(prefers-reduced-motion:reduce){.cSway{animation:none}}
   #heroC .variant-tag{display:none}
-  #heroC .wrap{align-items:flex-end;padding-bottom:clamp(64px,11vh,118px);padding-top:0}
-  #heroC .content{max-width:min(690px,84vw)}
-  #heroC h1{font-size:clamp(25px,3.15vw,42px);font-weight:700;color:#fff;margin-bottom:0;line-height:1.18}
+  #heroC .content{max-width:680px}
+  #heroC h1{font-size:clamp(34px,5vw,62px)}
+  #heroC .sub{font-size:clamp(16px,1.5vw,20px);max-width:560px}
 
   /* ================= VARIANT D — dense deep field (screen 2) ================= */
   #heroD{background:
@@ -137,22 +148,67 @@
   #heroD .stats{justify-content:center}
   #heroD .stat .lbl{margin-inline:auto}
 
-  /* ================= VARIANT E — woven deep mesh (screen 2 style) ================= */
+  /* ================= VARIANT E — deep-sea woven creature (dark) ================= */
   #heroE{background:
-      radial-gradient(70% 58% at 50% 55%, rgba(58,82,196,.34), transparent 66%),
-      radial-gradient(120% 90% at 50% 0%, rgba(18,26,78,.55), transparent 60%),
-      linear-gradient(175deg,#070a24 0%,#0a1140 48%,#060818 100%)}
+      radial-gradient(100% 72% at 50% 20%, rgba(22,38,96,.20), transparent 72%),
+      radial-gradient(120% 90% at 50% 122%, rgba(0,2,9,.97), transparent 58%),
+      linear-gradient(180deg,#050e26 0%,#030a1a 52%,#01040d 100%),
+      #01030c}
+  /* layered tentacles — no outline, deeper the further back, each darkens toward screen edges */
+  .eweave use,.eweave path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .eweave .lb-a{stroke:url(#gA);stroke-width:15}
+  .eweave .lb-b{stroke:url(#gB);stroke-width:16}
+  .eweave .lb-c{stroke:url(#gC);stroke-width:18}
+  .eweave .lb-i{stroke:url(#gI);stroke-width:18}
+  .eweave .lb-d{stroke:url(#gD);stroke-width:20}
+  .eweave .lb-e{stroke:url(#gE);stroke-width:23}
+  /* soft sheen: one stroke, gaussian-blurred -> smooth fade, no hard stripe */
+  .eweave .hi{stroke:#9cbcff;stroke-width:7;opacity:.34;filter:url(#softHi)}
+  /* drifting deep-sea motes for life */
+  .eweave .mote{fill:url(#mote);animation:moteFloat linear infinite}
+  @keyframes moteFloat{
+    0%{opacity:0;transform:translateY(14px)}
+    14%{opacity:.65}
+    86%{opacity:.5}
+    100%{opacity:0;transform:translateY(-46px)}
+  }
+  .swB,.swM,.swF{transform-box:fill-box;transform-origin:center;will-change:transform}
+  .swB{animation:swayB 26s ease-in-out infinite}
+  .swM{animation:swayM 20s ease-in-out infinite}
+  .swF{animation:swayF 15s ease-in-out infinite}
+  @keyframes swayB{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(3px,-3px) rotate(.22deg)}}
+  @keyframes swayM{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(6px,-5px) rotate(.4deg)}}
+  @keyframes swayF{0%,100%{transform:translate(0,0) rotate(0deg)}50%{transform:translate(10px,-7px) rotate(.6deg)}}
+  #heroE.idle .swB,#heroE.idle .swM,#heroE.idle .swF,#heroE.idle .mote{animation-play-state:paused}
+  @media(prefers-reduced-motion:reduce){.swB,.swM,.swF,.mote{animation:none}}
   #heroE .wrap{justify-content:center;text-align:center}
-  #heroE .content{max-width:880px;display:flex;flex-direction:column;align-items:center}
+  #heroE .content{position:relative;max-width:880px;display:flex;flex-direction:column;align-items:center}
+  #heroE .content::before{content:"";position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);
+    width:min(84vw,760px);height:min(54vh,420px);z-index:-1;pointer-events:none;
+    background:radial-gradient(ellipse at center,
+      rgba(3,7,20,.9) 0%,
+      rgba(3,7,20,.8) 34%,
+      rgba(3,7,20,.55) 58%,
+      rgba(3,7,20,.24) 78%,
+      rgba(3,7,20,0) 100%);
+    filter:blur(16px)}
+  #heroE .content::after{content:"";position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);
+    width:min(98vw,1060px);height:min(68vh,560px);z-index:-2;pointer-events:none;
+    background:radial-gradient(ellipse at center,
+      rgba(6,8,22,.32) 0%,
+      rgba(6,8,22,.18) 48%,
+      rgba(6,8,22,.08) 70%,
+      rgba(6,8,22,0) 100%);
+    filter:blur(24px)}
   #heroE h1{font-size:clamp(34px,5.4vw,66px)}
   #heroE .sub{font-size:clamp(16px,1.5vw,20px);max-width:600px}
   #heroE .eyebrow{margin-inline:auto}
   #heroE .stats{justify-content:center}
   #heroE .stat .lbl{margin-inline:auto}
   .spark{position:absolute;z-index:16;color:#dbe9ff;line-height:1;pointer-events:none;
-    text-shadow:0 0 10px rgba(150,190,255,.9);animation:twinkle 2.8s ease-in-out infinite}
+    text-shadow:0 0 10px rgba(34,203,255,.45);opacity:.62;animation:twinkle 3.1s ease-in-out infinite}
   .spark.s1{top:17%;right:13%;font-size:26px}
-  .spark.s2{top:31%;right:9%;font-size:14px;animation-delay:.9s}
+  .spark.s2{top:31%;right:9%;font-size:14px;opacity:.48;animation-delay:.9s}
   @keyframes twinkle{0%,100%{opacity:.25;transform:scale(.85) rotate(0deg)}50%{opacity:1;transform:scale(1.12) rotate(18deg)}}
 
   .scroll-hint{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:18;
@@ -178,30 +234,29 @@
       <linearGradient id="tg2" x1="0" y1="0" x2="1" y2="0">
         <stop offset="0" stop-color="#19e3c4"/><stop offset="1" stop-color="#3a7bff"/>
       </linearGradient>
-      <filter id="glowA"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
 
-    <g class="sway1" opacity=".9" filter="url(#glowA)">
+    <g class="sway1" opacity=".9">
       <path d="M1480,120 C1180,170 1000,90 760,210 C560,310 470,210 300,330 C170,420 80,360 -40,470"
-            fill="none" stroke="url(#tg1)" stroke-width="10" stroke-linecap="round" opacity=".22"/>
+            fill="none" stroke="url(#tg1)" stroke-width="14" stroke-linecap="round" opacity=".3"/>
       <path class="flow d1" d="M1480,120 C1180,170 1000,90 760,210 C560,310 470,210 300,330 C170,420 80,360 -40,470"
             fill="none" stroke="#9fe9ff" stroke-width="4" stroke-linecap="round"/>
     </g>
-    <g class="sway2" opacity=".85" filter="url(#glowA)">
+    <g class="sway2" opacity=".85">
       <path d="M1500,330 C1260,360 1080,300 880,420 C700,520 600,440 420,540 C260,630 150,580 -30,690"
-            fill="none" stroke="url(#tg2)" stroke-width="9" stroke-linecap="round" opacity=".20"/>
+            fill="none" stroke="url(#tg2)" stroke-width="13" stroke-linecap="round" opacity=".28"/>
       <path class="flow d2" d="M1500,330 C1260,360 1080,300 880,420 C700,520 600,440 420,540 C260,630 150,580 -30,690"
             fill="none" stroke="#bafff0" stroke-width="3.5" stroke-linecap="round"/>
     </g>
-    <g class="sway3" opacity=".8" filter="url(#glowA)">
+    <g class="sway3" opacity=".8">
       <path d="M1490,560 C1240,600 1120,560 940,660 C760,760 660,700 480,770 C300,840 190,820 -20,880"
-            fill="none" stroke="url(#tg1)" stroke-width="8" stroke-linecap="round" opacity=".18"/>
+            fill="none" stroke="url(#tg1)" stroke-width="12" stroke-linecap="round" opacity=".26"/>
       <path class="flow d3" d="M1490,560 C1240,600 1120,560 940,660 C760,760 660,700 480,770 C300,840 190,820 -20,880"
             fill="none" stroke="#c9b8ff" stroke-width="3" stroke-linecap="round"/>
     </g>
-    <g class="sway1" opacity=".7" filter="url(#glowA)">
+    <g class="sway1" opacity=".7">
       <path d="M1470,-20 C1300,60 1220,30 1060,120 C900,210 840,150 700,250"
-            fill="none" stroke="url(#tg2)" stroke-width="7" stroke-linecap="round" opacity=".16"/>
+            fill="none" stroke="url(#tg2)" stroke-width="11" stroke-linecap="round" opacity=".24"/>
       <path class="flow d2" d="M1470,-20 C1300,60 1220,30 1060,120 C900,210 840,150 700,250"
             fill="none" stroke="#9fe9ff" stroke-width="2.6" stroke-linecap="round"/>
     </g>
@@ -278,11 +333,63 @@
 <section class="hero" id="heroC">
   <span class="variant-tag">Вариант C · Толстые дуги</span>
 
-  <canvas id="tentacleCanvas"></canvas>
+  <svg class="bg cpattern" viewBox="-26 60 360 232" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="cGlow" x1="-30" y1="0" x2="340" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#5648e0"/>
+        <stop offset=".32" stop-color="#2f349e"/>
+        <stop offset=".62" stop-color="#171a52"/>
+        <stop offset=".85" stop-color="#0a0a24"/>
+        <stop offset="1" stop-color="#050515"/>
+      </linearGradient>
+    </defs>
+    <g class="cSway">
+      <path d="M254.001 67.2603C284.8 62.59 363.803 85.6259 395.005 175.929" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M334.001 68.8307C363.446 78.9971 422.716 136.087 408.414 230.552" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M277.001 107.32C300.739 110.08 355.644 143.758 363.447 218.746" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M207.001 91.1279C251.276 75.8038 354.272 81.6357 370.419 188.625" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M40.0007 41.2169C83.5491 36.795 178.498 59.5448 209.904 185.919" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M77.5007 65.5002C106.001 70.0002 171.501 99.5002 186.99 179.105" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M124 107.5C144 118.5 160.5 149 164.5 161" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M89.6443 241.081C110.262 217.729 185.626 184.678 267.519 233.889" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M138.809 234.363C161.471 222.889 222.586 216.093 269.241 262.156" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M7.00073 125.971C31.7909 162.047 110.547 219.756 227.249 161.984" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M46.0007 134.454C65.3656 154.835 127.854 186.771 222.888 151.473" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M179 118C201.068 155.803 275.363 219.151 396 170.125" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M196.835 35.9993C206.948 86.4075 256.365 177.205 373.13 137.129" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M66.0007 236.961C94.2297 203.507 178.296 153.852 288.727 222.857" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M203.001 118C219.304 144.544 287.877 190.041 377.001 155.617" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M82.0007 133.403C94.7459 146.088 141.355 163.067 192.036 133.686" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M203.001 240.087C240.849 262.075 336.729 280.509 417.46 178.336" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+      <path d="M241.878 231.056C268.104 241.183 338.248 243.291 409.02 170.704" stroke="url(#cGlow)" stroke-width="14" stroke-linecap="round"/>
+    </g>
+  </svg>
+
+  <nav class="nav">
+    <img class="nav__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
+    <div class="nav__links">
+      <a href="#">Возможности</a>
+      <a href="#">Данные</a>
+      <a href="#">Кейсы</a>
+      <a href="#">Тарифы</a>
+      <button class="nav__cta">Получить доступ</button>
+    </div>
+  </nav>
 
   <div class="wrap">
     <div class="content">
-      <h1>Уникальные данные о&nbsp;рекламной активности рынка&nbsp;— уже через час после запуска кампаний</h1>
+      <span class="eyebrow"><span class="dot"></span>AI-платформа мониторинга рекламы</span>
+      <h1>Уникальные данные о&nbsp;рекламной <span class="grad">активности рынка</span>&nbsp;— уже через час после запуска кампаний</h1>
+      <p class="sub">Octopus — AI-платформа с собственными технологиями мониторинга рекламы для&nbsp;формирования полной картины активности рынка и&nbsp;конкурентов.</p>
+      <div class="actions">
+        <button class="btn-primary">Получить доступ</button>
+        <button class="btn-ghost">Смотреть демо</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="num grad">1 час</div><div class="lbl">до готовой аналитики</div></div>
+        <div class="stat"><div class="num grad">360°</div><div class="lbl">обзор конкурентов</div></div>
+        <div class="stat"><div class="num grad">24/7</div><div class="lbl">мониторинг рынка</div></div>
+      </div>
     </div>
   </div>
 </section>
@@ -327,10 +434,104 @@
 <section class="hero" id="heroE">
   <span class="variant-tag">Вариант E · Плетёная глубина</span>
 
-  <canvas id="weaveCanvas"></canvas>
-  <div class="depth-vignette"></div>
-  <span class="spark s1">✦</span>
-  <span class="spark s2">✦</span>
+  <svg class="bg eweave" viewBox="60 36 558 320" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <filter id="softHi" x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur stdDeviation="5"/>
+      </filter>
+      <radialGradient id="mote" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#cfe2ff" stop-opacity="1"/>
+        <stop offset="0.45" stop-color="#9bc0ff" stop-opacity=".5"/>
+        <stop offset="1" stop-color="#9bc0ff" stop-opacity="0"/>
+      </radialGradient>
+      <!-- back · deep navy -->
+      <radialGradient id="gA" cx="339" cy="196" r="300" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#0e1640"/><stop offset=".55" stop-color="#080d28"/><stop offset="1" stop-color="#04060e"/>
+      </radialGradient>
+      <!-- back · dark blue -->
+      <radialGradient id="gB" cx="339" cy="196" r="300" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#101a4a"/><stop offset=".55" stop-color="#0a1130"/><stop offset="1" stop-color="#05070f"/>
+      </radialGradient>
+      <!-- mid · blue -->
+      <radialGradient id="gC" cx="339" cy="196" r="300" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#16235e"/><stop offset=".55" stop-color="#0a1138"/><stop offset="1" stop-color="#060a20"/>
+      </radialGradient>
+      <!-- mid · indigo -->
+      <radialGradient id="gI" cx="339" cy="196" r="300" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#20276e"/><stop offset=".5" stop-color="#0c1036"/><stop offset="1" stop-color="#060818"/>
+      </radialGradient>
+      <!-- front · blue -->
+      <radialGradient id="gD" cx="339" cy="196" r="300" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#1f2f86"/><stop offset=".5" stop-color="#0c1440"/><stop offset="1" stop-color="#070b22"/>
+      </radialGradient>
+      <!-- front · bright blue (D accent) -->
+      <radialGradient id="gE" cx="339" cy="196" r="300" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#283ca0"/><stop offset=".5" stop-color="#0e1742"/><stop offset="1" stop-color="#080d24"/>
+      </radialGradient>
+      <g id="eL1Shapes">
+        <path d="M664.732 111.677C609.732 133.344 512.132 186.177 561.732 224.177C611.332 262.177 522.399 345.677 471.732 382.677"/>
+        <path d="M666.732 233.677C654.899 274.844 611.732 361.477 533.732 378.677"/>
+        <path d="M647.232 19.6773C604.899 49.6773 548.032 99.5773 659.232 59.1773"/>
+        <path d="M11.7319 40.1773C49.0653 68.6773 102.432 134.677 17.2319 170.677"/>
+      </g>
+      <g id="eL2Shapes">
+        <path d="M380.232 375.677C281.565 305.011 68.4319 153.977 5.23193 115.177"/>
+        <path d="M19.2319 249.177C68.2319 211.511 177.132 138.577 220.732 148.177C275.232 160.177 295.232 138.677 297.732 131.177C299.732 125.177 436.565 50.0107 504.732 13.1773"/>
+        <path d="M670.732 367.677C617.232 320.677 501.232 234.777 465.232 267.177C429.232 299.577 383.565 245.011 365.232 213.677C326.899 188.844 249.532 131.177 246.732 99.1773C243.932 67.1773 183.232 29.844 153.232 15.1773"/>
+      </g>
+      <g id="eL3Shapes">
+        <path d="M146.732 376.677C221.232 327.511 373.532 228.677 386.732 226.677C403.232 224.177 485.232 133.677 492.732 122.677C500.232 111.677 558.232 60.6773 565.732 63.6773C573.232 66.6773 582.732 18.6774 537.732 41.1774C492.732 63.6773 369.232 99.1773 403.232 48.6773C430.432 8.27735 474.232 7.51068 492.732 12.1773"/>
+        <path d="M562.732 372.177C523.232 348.677 439.032 291.377 418.232 250.177C392.232 198.677 304.232 172.177 259.232 122.677C223.232 83.0774 183.565 75.1774 168.232 76.1774C158.399 76.0107 124.532 62.5773 67.7319 10.1773"/>
+        <path d="M624.732 378.677C561.732 339.511 427.932 246.977 396.732 190.177C357.732 119.177 282.732 130.677 236.732 172.677C190.732 214.677 42.7319 281.677 20.2319 300.677"/>
+      </g>
+      <g id="eIShapes">
+        <path d="M62.2319 376.677C165.065 324.344 372.032 217.577 377.232 209.177C383.732 198.677 419.732 166.177 454.232 178.177C488.732 190.177 535.232 245.677 589.732 253.177C644.232 260.677 660.732 282.677 665.732 287.677"/>
+        <path d="M396.232 17.1773C350.732 28.1773 261.532 65.6773 268.732 127.677C277.732 205.177 193.732 175.177 178.732 177.177C163.732 179.177 95.2319 228.177 21.2319 260.677"/>
+      </g>
+      <g id="eL4Shapes">
+        <path d="M535.732 10.1773C474.899 41.844 369.232 110.777 433.232 133.177C513.232 161.177 577.732 129.677 607.732 112.677C631.732 99.0773 656.399 83.0107 665.732 76.6773"/>
+        <path d="M120.232 17.6773C170.232 52.844 270.232 137.877 270.232 196.677C270.232 255.477 399.565 291.844 464.232 302.677C487.732 313.511 540.732 342.977 564.732 374.177"/>
+      </g>
+      <g id="eL5Shapes">
+        <path d="M12.7319 338.177C130.732 265.177 135.732 214.677 334.232 381.677M12.7319 370.177C64.2319 331.177 179.632 255.977 229.232 267.177C291.232 281.177 345.732 272.677 359.232 267.177C372.732 261.677 414.232 256.677 439.232 376.677"/>
+        <path d="M20.2319 14.1773C183.232 130.177 234.732 133.177 241.232 212.677C243.554 241.083 411.732 345.677 468.232 382.677M14.7319 221.177C64.2319 181.011 171.032 103.377 202.232 114.177C233.432 124.977 244.899 87.0107 246.732 66.6773C251.732 57.6773 275.232 34.5773 329.232 14.1773"/>
+        <path d="M661.232 338.177C606.732 297.511 495.232 218.477 485.232 227.677C472.732 239.177 428.732 187.177 423.232 158.677C417.732 130.177 338.732 118.677 333.232 115.177C327.732 111.677 302.732 90.1773 357.732 59.1773C401.732 34.3773 439.732 15.844 453.232 9.67734"/>
+        <path d="M222.732 378.677C241.899 363.844 283.932 327.677 298.732 301.677C317.232 269.177 402.232 255.677 410.732 244.677C419.232 233.677 510.732 174.177 530.732 176.177C546.732 177.777 630.732 150.511 670.732 136.677"/>
+        <path d="M210.232 5.67734C233.565 39.5107 292.932 106.777 343.732 105.177C394.532 103.577 443.565 175.511 461.732 211.677C497.065 229.677 586.432 251.877 661.232 196.677"/>
+      </g>
+      <g id="eHiShapes">
+        <path d="M12.7319 338.177C130.732 265.177 135.732 214.677 334.232 381.677M12.7319 370.177C64.2319 331.177 179.632 255.977 229.232 267.177C291.232 281.177 345.732 272.677 359.232 267.177C372.732 261.677 414.232 256.677 439.232 376.677"/>
+        <path d="M20.2319 14.1773C183.232 130.177 234.732 133.177 241.232 212.677C243.554 241.083 411.732 345.677 468.232 382.677M14.7319 221.177C64.2319 181.011 171.032 103.377 202.232 114.177C233.432 124.977 244.899 87.0107 246.732 66.6773C251.732 57.6773 275.232 34.5773 329.232 14.1773"/>
+      </g>
+    </defs>
+    <g class="swB">
+      <use href="#eL1Shapes" class="lb-a"/>
+      <use href="#eL2Shapes" class="lb-b"/>
+    </g>
+    <g class="swM">
+      <use href="#eL3Shapes" class="lb-c"/>
+      <use href="#eIShapes" class="lb-i"/>
+    </g>
+    <g class="swF">
+      <use href="#eL4Shapes" class="lb-d"/>
+      <use href="#eL5Shapes" class="lb-e"/>
+      <use href="#eHiShapes" class="hi"/>
+    </g>
+    <g class="parts">
+      <circle class="mote" cx="150" cy="150" r="9"  style="animation-duration:13s;animation-delay:-2s"/>
+      <circle class="mote" cx="250" cy="250" r="6"  style="animation-duration:17s;animation-delay:-7s"/>
+      <circle class="mote" cx="330" cy="120" r="11" style="animation-duration:21s;animation-delay:-4s"/>
+      <circle class="mote" cx="410" cy="220" r="7"  style="animation-duration:15s;animation-delay:-11s"/>
+      <circle class="mote" cx="480" cy="150" r="5"  style="animation-duration:19s;animation-delay:-1s"/>
+      <circle class="mote" cx="210" cy="320" r="8"  style="animation-duration:23s;animation-delay:-9s"/>
+      <circle class="mote" cx="540" cy="280" r="10" style="animation-duration:16s;animation-delay:-13s"/>
+      <circle class="mote" cx="120" cy="240" r="6"  style="animation-duration:20s;animation-delay:-5s"/>
+      <circle class="mote" cx="370" cy="300" r="7"  style="animation-duration:14s;animation-delay:-3s"/>
+      <circle class="mote" cx="300" cy="190" r="5"  style="animation-duration:18s;animation-delay:-15s"/>
+      <circle class="mote" cx="450" cy="100" r="8"  style="animation-duration:22s;animation-delay:-8s"/>
+      <circle class="mote" cx="180" cy="90"  r="6"  style="animation-duration:24s;animation-delay:-6s"/>
+    </g>
+  </svg>
 
   <nav class="nav">
     <img class="nav__logo" src="assets/logo-octopus-white.png" alt="Octopus" />
@@ -362,26 +563,45 @@
 </section>
 
 <script>
+/* ---- Variants A, C & E: pause SVG sway/flow when scrolled off-screen ---- */
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  ['heroA','heroC','heroE'].forEach(id=>{
+    const hero=document.getElementById(id);
+    if(!hero) return;
+    new IntersectionObserver(es=>{ hero.classList.toggle('idle', !es[0].isIntersecting); },{threshold:.6}).observe(hero);
+  });
+})();
+
 /* ---- Variant B: deep-water flowing data streams + particles ---- */
 (function(){
   const canvas = document.getElementById('deepCanvas');
   const ctx = canvas.getContext('2d');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W,H,dpr,t=0;
+  let W=0,H=0,dpr=0,t=0,lastTs=0,resizeRaf=0;
   let streams=[], dots=[];
 
   function resize(){
-    dpr = Math.min(devicePixelRatio||1, 2);
-    W = canvas.clientWidth; H = canvas.clientHeight;
+    const nextDpr = Math.min(devicePixelRatio||1, 2);
+    const nextW = Math.round(canvas.clientWidth);
+    const nextH = Math.round(canvas.clientHeight);
+    if(!nextW || !nextH) return;
+    if(nextW===W && nextH===H && nextDpr===dpr) return;
+    dpr = nextDpr;
+    W = nextW; H = nextH;
     canvas.width = W*dpr; canvas.height = H*dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
     build();
+  }
+  function onResize(){
+    if(resizeRaf) return;
+    resizeRaf = requestAnimationFrame(()=>{ resizeRaf=0; resize(); });
   }
   function build(){
     streams=[]; dots=[];
     const n = Math.max(10, Math.round(W/95));
     for(let i=0;i<n;i++){
-      streams.push({
+      const s={
         x:(i+0.5)/n*W + (Math.random()-.5)*40,
         amp:30+Math.random()*70,
         len:0.5+Math.random()*0.9,
@@ -389,7 +609,13 @@
         phase:Math.random()*Math.PI*2,
         w:1+Math.random()*2.2,
         hue:185+Math.random()*70   // cyan -> violet
-      });
+      };
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,`hsla(${s.hue},90%,65%,0)`);
+      g.addColorStop(0.5,`hsla(${s.hue},90%,65%,0.30)`);
+      g.addColorStop(1,`hsla(${s.hue},90%,70%,0)`);
+      s.grad=g;
+      streams.push(s);
     }
     const dn = Math.round(W/14);
     for(let i=0;i<dn;i++){
@@ -397,7 +623,7 @@
         sp:0.15+Math.random()*0.5,tw:Math.random()*Math.PI*2,hue:180+Math.random()*80});
     }
   }
-  function draw(){
+  function draw(dt){
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation='lighter';
 
@@ -411,11 +637,7 @@
         const x=s.x+wob;
         if(y===top) ctx.moveTo(x,y); else ctx.lineTo(x,y);
       }
-      const g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,`hsla(${s.hue},90%,65%,0)`);
-      g.addColorStop(0.5,`hsla(${s.hue},90%,65%,0.30)`);
-      g.addColorStop(1,`hsla(${s.hue},90%,70%,0)`);
-      ctx.strokeStyle=g; ctx.lineWidth=s.w; ctx.lineCap='round';
+      ctx.strokeStyle=s.grad; ctx.lineWidth=s.w; ctx.lineCap='round';
       ctx.stroke();
 
       // travelling light blob along the stream (shimmer)
@@ -439,120 +661,27 @@
     }
 
     ctx.globalCompositeOperation='source-over';
-    t+=0.016;
-    if(!reduce) requestAnimationFrame(draw);
+    t+=dt;
   }
-  addEventListener('resize',resize);
+  let inView=false, tabVisible=!document.hidden, running=false;
+  function frame(ts){
+    if(!running) return;
+    if(!lastTs) lastTs=ts;
+    const dt=Math.min((ts-lastTs)/1000,0.05);
+    lastTs=ts;
+    draw(dt);
+    requestAnimationFrame(frame);
+  }
+  function update(){
+    const should = inView && tabVisible && !reduce;
+    if(should && !running){ running=true; lastTs=0; requestAnimationFrame(frame); }
+    else if(!should){ running=false; }
+  }
+  addEventListener('resize',onResize,{passive:true});
+  document.addEventListener('visibilitychange',()=>{ tabVisible=!document.hidden; update(); });
   resize();
-  if(reduce){ draw(); } else { requestAnimationFrame(draw); }
-})();
-
-/* ---- Variant C: polished animated sea-anemone arcs ---- */
-(function(){
-  const canvas=document.getElementById('tentacleCanvas');
-  const ctx=canvas.getContext('2d');
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W,H,dpr,t=0,stems=[];
-
-  function resize(){
-    dpr=Math.min(devicePixelRatio||1,2);
-    W=canvas.clientWidth; H=canvas.clientHeight;
-    canvas.width=W*dpr; canvas.height=H*dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    build();
-  }
-  function build(){
-    stems=[
-      // Left fan: related, but each curve has its own length and bend.
-      {p:[[-.18,.42],[.08,.42],[.21,.25],[.34,-.06]],from:.02,to:.90,w:44,h:236,l:54,a:.96,phase:.1,drift:1.1},
-      {p:[[-.16,.56],[.10,.54],[.24,.36],[.39,.10]],from:.00,to:.78,w:38,h:232,l:50,a:.90,phase:.9,drift:.9},
-      {p:[[-.12,.70],[.13,.67],[.27,.50],[.44,.25]],from:.04,to:.70,w:34,h:229,l:47,a:.82,phase:1.8,drift:.8},
-      {p:[[.04,.87],[.20,.76],[.30,.61],[.43,.40]],from:.00,to:.57,w:28,h:226,l:43,a:.72,phase:2.7,drift:.6},
-      {p:[[.20,-.08],[.40,.00],[.52,.18],[.54,.43]],from:.00,to:.70,w:24,h:231,l:45,a:.38,phase:3.4,drift:.5},
-
-      // Right crown: technological arcs with uneven endpoints, not mirrored copies.
-      {p:[[.51,.16],[.70,-.02],[.96,.02],[1.18,.22]],from:.02,to:.80,w:42,h:238,l:54,a:.94,phase:.45,drift:1.0},
-      {p:[[.59,.30],[.75,.18],[.93,.19],[1.12,.35]],from:.00,to:.75,w:36,h:234,l:51,a:.88,phase:1.25,drift:.85},
-      {p:[[.70,.44],[.84,.34],[.99,.38],[1.13,.54]],from:.00,to:.66,w:32,h:231,l:49,a:.82,phase:2.05,drift:.75},
-      {p:[[.80,.58],[.91,.49],[1.01,.55],[1.09,.70]],from:.00,to:.60,w:30,h:228,l:47,a:.76,phase:2.85,drift:.65},
-      {p:[[.64,-.03],[.84,.02],[.99,.12],[1.10,.30]],from:.00,to:.54,w:26,h:232,l:48,a:.58,phase:3.55,drift:.55},
-      {p:[[.88,.04],[1.00,.10],[1.10,.23],[1.20,.42]],from:.00,to:.58,w:28,h:236,l:52,a:.80,phase:4.25,drift:.65},
-
-      // Deep lower ribbons: slower and darker, so they support the title instead of cluttering it.
-      {p:[[.14,.93],[.39,.68],[.66,.69],[1.02,.78]],from:.04,to:.88,w:40,h:233,l:43,a:.62,phase:.65,drift:.55},
-      {p:[[.22,.98],[.44,.78],[.68,.78],[.96,.88]],from:.00,to:.70,w:32,h:230,l:41,a:.52,phase:1.45,drift:.45},
-      {p:[[.36,.90],[.56,.75],[.77,.79],[1.08,.92]],from:.00,to:.63,w:30,h:236,l:48,a:.70,phase:2.25,drift:.5},
-      {p:[[.50,.99],[.66,.86],[.82,.88],[1.08,.98]],from:.00,to:.50,w:24,h:228,l:41,a:.42,phase:3.05,drift:.35},
-      {p:[[.38,.73],[.55,.63],[.72,.64],[.94,.70]],from:.08,to:.58,w:24,h:226,l:37,a:.28,phase:3.85,drift:.3}
-    ];
-  }
-  function cubic(points,s){
-    const u=1-s, a=u*u*u, b=3*u*u*s, c=3*u*s*s, d=s*s*s;
-    return {
-      x:(a*points[0][0]+b*points[1][0]+c*points[2][0]+d*points[3][0])*W,
-      y:(a*points[0][1]+b*points[1][1]+c*points[2][1]+d*points[3][1])*H
-    };
-  }
-  function drawStem(stem){
-    const pts=stem.p.map(([x,y],i)=>{
-      const wob=reduce?0:Math.sin(t*.34*stem.drift+stem.phase+i*.9)*.006;
-      return [x+wob*(i%2?1:-1), y+wob];
-    });
-    const start=cubic(pts,stem.from), end=cubic(pts,stem.to);
-    const g=ctx.createLinearGradient(start.x,start.y,end.x,end.y);
-    g.addColorStop(0,`hsla(${stem.h},92%,${stem.l-8}%,0)`);
-    g.addColorStop(.12,`hsla(${stem.h},92%,${stem.l+4}%,${stem.a*.78})`);
-    g.addColorStop(.46,`hsla(${stem.h+5},98%,${stem.l+15}%,${stem.a})`);
-    g.addColorStop(.84,`hsla(${stem.h+12},84%,${stem.l-4}%,${stem.a*.62})`);
-    g.addColorStop(1,`hsla(${stem.h+14},80%,${stem.l-10}%,0)`);
-
-    ctx.beginPath();
-    for(let s=stem.from;s<=stem.to+.001;s+=.018){
-      const p=cubic(pts,Math.min(s,stem.to));
-      s===stem.from?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
-    }
-    ctx.strokeStyle=g;
-    ctx.lineWidth=stem.w;
-    ctx.lineCap='round';
-    ctx.lineJoin='round';
-    ctx.shadowColor=`hsla(${stem.h},96%,56%,0.30)`;
-    ctx.shadowBlur=12;
-    ctx.stroke();
-    ctx.shadowBlur=0;
-
-    // Slow moving technological highlight, also faded at the ends.
-    if(!reduce){
-      const pulse=(Math.sin(t*.42+stem.phase)*.5+.5);
-      const hs=Math.max(stem.from, stem.from+(stem.to-stem.from)*(pulse-.16));
-      const he=Math.min(stem.to, stem.from+(stem.to-stem.from)*(pulse+.14));
-      if(he>hs){
-        const hStart=cubic(pts,hs), hEnd=cubic(pts,he);
-        const hg=ctx.createLinearGradient(hStart.x,hStart.y,hEnd.x,hEnd.y);
-        hg.addColorStop(0,'rgba(180,205,255,0)');
-        hg.addColorStop(.5,`rgba(210,225,255,${Math.min(.32, stem.a*.34)})`);
-        hg.addColorStop(1,'rgba(180,205,255,0)');
-        ctx.beginPath();
-        for(let s=hs;s<=he+.001;s+=.014){
-          const p=cubic(pts,Math.min(s,he));
-          s===hs?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
-        }
-        ctx.strokeStyle=hg;
-        ctx.lineWidth=Math.max(3,stem.w*.28);
-        ctx.lineCap='round';
-        ctx.stroke();
-      }
-    }
-  }
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    ctx.globalCompositeOperation='source-over';
-    stems.forEach(drawStem);
-    t+=0.016;
-    if(!reduce) requestAnimationFrame(draw);
-  }
-  addEventListener('resize',resize);
-  resize();
-  if(reduce){draw();} else {requestAnimationFrame(draw);}
+  if(reduce){ draw(0.016); }
+  else new IntersectionObserver(es=>{ inView=es[0].isIntersecting; update(); },{threshold:.6}).observe(canvas.closest('.hero'));
 })();
 
 /* ---- Variant D: dense flowing deep field (matches screen 2) ---- */
@@ -560,21 +689,30 @@
   const canvas=document.getElementById('fieldCanvas');
   const ctx=canvas.getContext('2d');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W,H,dpr,t=0,lines=[],stars=[];
+  let W=0,H=0,dpr=0,t=0,lastTs=0,resizeRaf=0,lines=[],stars=[];
 
   function resize(){
-    dpr=Math.min(devicePixelRatio||1,2);
-    W=canvas.clientWidth; H=canvas.clientHeight;
+    const nextDpr=Math.min(devicePixelRatio||1,2);
+    const nextW=Math.round(canvas.clientWidth);
+    const nextH=Math.round(canvas.clientHeight);
+    if(!nextW || !nextH) return;
+    if(nextW===W && nextH===H && nextDpr===dpr) return;
+    dpr=nextDpr;
+    W=nextW; H=nextH;
     canvas.width=W*dpr; canvas.height=H*dpr;
     ctx.setTransform(dpr,0,0,dpr,0,0);
     build();
+  }
+  function onResize(){
+    if(resizeRaf) return;
+    resizeRaf=requestAnimationFrame(()=>{resizeRaf=0; resize();});
   }
   function build(){
     lines=[]; stars=[];
     const n=Math.max(40,Math.round(W/7));          // DENSE vertical field
     for(let i=0;i<n;i++){
       const bright=Math.random()<0.16;
-      lines.push({
+      const l={
         x:(i+0.5)/n*W+(Math.random()-.5)*8,
         amp:6+Math.random()*34,
         freq:0.004+Math.random()*0.012,
@@ -583,11 +721,17 @@
         w:bright?(1.2+Math.random()*1.6):(0.5+Math.random()*1.0),
         hue:206+Math.random()*46,
         alpha:bright?(0.32+Math.random()*0.3):(0.06+Math.random()*0.16)
-      });
+      };
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,`hsla(${l.hue},85%,68%,0)`);
+      g.addColorStop(0.5,`hsla(${l.hue},85%,68%,${l.alpha})`);
+      g.addColorStop(1,`hsla(${l.hue},85%,70%,0)`);
+      l.grad=g;
+      lines.push(l);
     }
     for(let i=0;i<5;i++) stars.push({x:Math.random()*W,y:Math.random()*H*0.6,r:1+Math.random()*1.6,tw:Math.random()*6.28});
   }
-  function draw(){
+  function draw(dt){
     ctx.clearRect(0,0,W,H);
     ctx.globalCompositeOperation='lighter';
     for(const l of lines){
@@ -596,11 +740,7 @@
         const x=l.x+Math.sin(y*l.freq+t*l.speed+l.phase)*l.amp;
         y===-30?ctx.moveTo(x,y):ctx.lineTo(x,y);
       }
-      const g=ctx.createLinearGradient(0,0,0,H);
-      g.addColorStop(0,`hsla(${l.hue},85%,68%,0)`);
-      g.addColorStop(0.5,`hsla(${l.hue},85%,68%,${l.alpha})`);
-      g.addColorStop(1,`hsla(${l.hue},85%,70%,0)`);
-      ctx.strokeStyle=g; ctx.lineWidth=l.w; ctx.stroke();
+      ctx.strokeStyle=l.grad; ctx.lineWidth=l.w; ctx.stroke();
     }
     // twinkling sparkles (like the accent on screen 2)
     for(const s of stars){
@@ -610,83 +750,29 @@
       ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(s.x,s.y,s.r*5,0,6.28); ctx.fill();
     }
     ctx.globalCompositeOperation='source-over';
-    t+=0.016;
-    if(!reduce) requestAnimationFrame(draw);
+    t+=dt;
   }
-  addEventListener('resize',resize);
+  let inView=false, tabVisible=!document.hidden, running=false;
+  function frame(ts){
+    if(!running) return;
+    if(!lastTs) lastTs=ts;
+    const dt=Math.min((ts-lastTs)/1000,0.05);
+    lastTs=ts;
+    draw(dt);
+    requestAnimationFrame(frame);
+  }
+  function update(){
+    const should = inView && tabVisible && !reduce;
+    if(should && !running){ running=true; lastTs=0; requestAnimationFrame(frame); }
+    else if(!should){ running=false; }
+  }
+  addEventListener('resize',onResize,{passive:true});
+  document.addEventListener('visibilitychange',()=>{ tabVisible=!document.hidden; update(); });
   resize();
-  if(reduce){draw();} else {requestAnimationFrame(draw);}
+  if(reduce){draw(0.016);}
+  else new IntersectionObserver(es=>{ inView=es[0].isIntersecting; update(); },{threshold:.6}).observe(canvas.closest('.hero'));
 })();
 
-/* ---- Variant E: curtain of THICK flowing strands (tentacle-like, screen 2 style) ---- */
-(function(){
-  const canvas=document.getElementById('weaveCanvas');
-  const ctx=canvas.getContext('2d');
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let W,H,dpr,t=0,strands=[],spacing=0;
-
-  function resize(){
-    dpr=Math.min(devicePixelRatio||1,2);
-    W=canvas.clientWidth; H=canvas.clientHeight;
-    canvas.width=W*dpr; canvas.height=H*dpr;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    build();
-  }
-  function build(){
-    strands=[];
-    const n=Math.max(14,Math.round(W/46));     // few -> THICK strands
-    spacing=W/n;
-    for(let i=0;i<n;i++){
-      strands.push({
-        baseX:(i+0.5)*spacing,
-        half:spacing*(0.62+Math.random()*0.18), // thickness (overlaps neighbours a bit)
-        amp:18+Math.random()*30,                // how far it sways sideways
-        freq:0.0022+Math.random()*0.004,
-        speed:0.10+Math.random()*0.18,
-        phase:i*0.5+Math.random()*0.6,          // neighbours offset -> coherent drape
-        hue:218+Math.random()*30,
-        light:30+Math.random()*16,              // some strands sit deeper (darker)
-        depth:0.6+Math.random()*0.4
-      });
-    }
-    strands.sort((a,b)=>a.depth-b.depth);       // darker/back first, brighter in front
-  }
-  function cx(s,y){
-    return s.baseX + Math.sin(y*s.freq + t*s.speed + s.phase)*s.amp
-                   + Math.sin(y*s.freq*0.5 - t*s.speed*0.7 + s.phase)*s.amp*0.4;
-  }
-  function ribbon(s,off){               // trace centre±off down then up = closed band
-    ctx.beginPath();
-    for(let y=-30;y<=H+30;y+=14){const x=cx(s,y)+off; y===-30?ctx.moveTo(x,y):ctx.lineTo(x,y);}
-    for(let y=H+30;y>=-30;y-=14){const x=cx(s,y)-off; ctx.lineTo(x,y);}
-    ctx.closePath();
-  }
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    for(const s of strands){
-      // shadow/edge (dark) — creates the groove between strands
-      ribbon(s,s.half);
-      ctx.fillStyle=`hsl(${s.hue},70%,${s.light*0.5}%)`; ctx.fill();
-      // mid body
-      ribbon(s,s.half*0.66);
-      ctx.fillStyle=`hsl(${s.hue},78%,${s.light+10}%)`; ctx.fill();
-      // glossy highlight, offset slightly so it reads as a rounded tube catching light
-      ctx.save();
-      ribbon(s,s.half*0.28);
-      ctx.clip();
-      ctx.translate(-s.half*0.18,0);
-      ribbon(s,s.half*0.34);
-      const hl=Math.min(96,s.light+44);
-      ctx.fillStyle=`hsla(${s.hue-6},90%,${hl}%,0.9)`; ctx.fill();
-      ctx.restore();
-    }
-    t+=0.016;
-    if(!reduce) requestAnimationFrame(draw);
-  }
-  addEventListener('resize',resize);
-  resize();
-  if(reduce){draw();} else {requestAnimationFrame(draw);}
-})();
 </script>
 </body>
 </html>
